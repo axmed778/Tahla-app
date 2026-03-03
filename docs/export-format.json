@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "exportedAt": "2024-03-01T12:00:00.000Z",
+  "people": [
+    {
+      "id": "uuid-person-1",
+      "firstName": "Alice",
+      "lastName": "Smith",
+      "middleName": null,
+      "gender": "FEMALE",
+      "birthDate": "1980-05-15T00:00:00.000Z",
+      "deathDate": null,
+      "country": "USA",
+      "city": "New York",
+      "address": null,
+      "occupation": "Teacher",
+      "workplace": "Lincoln School",
+      "maritalStatus": "MARRIED",
+      "notes": null,
+      "createdAt": "2024-03-01T10:00:00.000Z",
+      "updatedAt": "2024-03-01T10:00:00.000Z",
+      "phones": [
+        { "id": "uuid-phone-1", "label": "Mobile", "number": "+1-555-0100" }
+      ],
+      "emails": [
+        { "id": "uuid-email-1", "label": null, "email": "alice@example.com" }
+      ],
+      "tags": [
+        { "id": "uuid-tag-1", "name": "Family" }
+      ]
+    }
+  ],
+  "tags": [
+    { "id": "uuid-tag-1", "name": "Family" }
+  ],
+  "relationships": [
+    {
+      "id": "uuid-rel-1",
+      "fromPersonId": "uuid-person-1",
+      "toPersonId": "uuid-person-2",
+      "type": "SPOUSE",
+      "label": null,
+      "createdAt": "2024-03-01T10:00:00.000Z"
+    }
+  ]
+}

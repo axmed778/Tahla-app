@@ -1,0 +1,162 @@
+{
+  "appName": "Təhlə App",
+  "nav": {
+    "directory": "Directory",
+    "feed": "Feed",
+    "friends": "Friends",
+    "addPerson": "Add person",
+    "settings": "Settings",
+    "signOut": "Sign out",
+    "master": "Master"
+  },
+  "lock": {
+    "title": "Sign in to your family account",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "password": "Password",
+    "signIn": "Sign in",
+    "createAccount": "Create account",
+    "noAccount": "Don't have an account?"
+  },
+  "register": {
+    "title": "Create account",
+    "subtitle": "Register with your name and password",
+    "passwordMin": "Password (min 6 characters)",
+    "createAccount": "Create account",
+    "hasAccount": "Already have an account?",
+    "signIn": "Sign in"
+  },
+  "feed": {
+    "title": "Family feed",
+    "subtitle": "Share marriage, new job, death notices, births, and other updates.",
+    "type": "Type",
+    "content": "Content",
+    "contentPlaceholder": "What's the news?",
+    "relatedPerson": "Related person (optional)",
+    "none": "None",
+    "post": "Post",
+    "noPosts": "No posts yet. Share an update above.",
+    "types": {
+      "MARRIAGE": "Marriage",
+      "NEW_WORKPLACE": "New workplace",
+      "DEATH": "Death notice",
+      "BIRTH": "Birth",
+      "OTHER": "Other"
+    }
+  },
+  "friends": {
+    "title": "Friends",
+    "subtitle": "Friends can view your family tree with name and surname only (privacy).",
+    "yourFriends": "Your friends",
+    "noFriends": "No friends yet. Add someone above.",
+    "addFriend": "Add friend",
+    "remove": "Remove",
+    "noUsersToAdd": "No other users to add, or everyone is already your friend."
+  },
+  "settings": {
+    "title": "Settings",
+    "back": "Back",
+    "changePassword": "Change password",
+    "currentPassword": "Current password",
+    "newPassword": "New password (min 6 characters)",
+    "changePasswordButton": "Change password",
+    "passwordChanged": "Password changed.",
+    "exportImport": "Export / Import",
+    "masterOnly": "Master only",
+    "masterOnlyDesc": "Reset all app data (people, users, friends, feed). Only the master account can do this.",
+    "resetAppData": "Reset app data"
+  },
+  "common": {
+    "back": "Back",
+    "edit": "Edit",
+    "viewFullTree": "View full tree",
+    "backToDirectory": "Back to directory",
+    "language": "Language"
+  },
+  "tree": {
+    "title": "Family tree",
+    "privacyNotice": "Privacy: only names are shown. You are viewing as a friend.",
+    "siblings": "Siblings"
+  },
+  "people": {
+    "addPerson": "Add person",
+    "quickAdd": "Quick add",
+    "fullForm": "Add person (full form)",
+    "miniTree": "Mini tree view"
+  },
+  "profileComplete": {
+    "title": "Complete your profile",
+    "subtitle": "Add your details so you appear in the family directory and others can connect with you."
+  },
+  "form": {
+    "identity": "Identity",
+    "firstName": "First name",
+    "middleName": "Middle name",
+    "lastName": "Last name",
+    "gender": "Gender",
+    "maritalStatus": "Marital status",
+    "birthDate": "Birth date",
+    "deathDate": "Death date",
+    "contact": "Contact",
+    "location": "Location",
+    "work": "Work",
+    "notesAndTags": "Notes & tags",
+    "country": "Country",
+    "city": "City",
+    "address": "Address",
+    "occupation": "Occupation",
+    "workplace": "Workplace",
+    "notes": "Notes",
+    "tags": "Tags",
+    "label": "Label",
+    "number": "Number",
+    "email": "Email",
+    "addPhone": "+ Phone",
+    "addEmail": "+ Email",
+    "male": "Male",
+    "female": "Female",
+    "other": "Other",
+    "single": "Single",
+    "married": "Married",
+    "divorced": "Divorced",
+    "widowed": "Widowed",
+    "save": "Save",
+    "createPerson": "Create person",
+    "cancel": "Cancel"
+  },
+  "users": {
+    "addUser": "Add user",
+    "addUserSubtitle": "Add a new family member account.",
+    "userAdded": "User added. They can sign in with the password you set.",
+    "onlyAdminCanAdd": "Only the family admin can create new accounts.",
+    "contactAdminToGetAccount": "Ask the family admin to add you, then sign in.",
+    "manageUsers": "Manage users",
+    "deleteUser": "Delete",
+    "deleteMyAccount": "Delete my account",
+    "defaultTreeRoot": "Default family tree",
+    "defaultTreeRootDesc": "Person shown when opening the Family tree tab (admin only)."
+  },
+  "events": {
+    "title": "Events",
+    "newEvent": "New event",
+    "eventName": "Event name",
+    "date": "Date",
+    "place": "Place",
+    "invitees": "Invitation list",
+    "inviteesVisible": "Visible to invited people",
+    "create": "Create event",
+    "noEvents": "No events yet.",
+    "participants": "Participants"
+  },
+  "nav": {
+    "directory": "Directory",
+    "feed": "Feed",
+    "events": "Events",
+    "familyTree": "Family tree",
+    "friends": "Friends",
+    "addPerson": "Add person",
+    "settings": "Settings",
+    "signOut": "Sign out",
+    "master": "Master"
+  }
+}

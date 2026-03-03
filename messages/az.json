@@ -1,0 +1,153 @@
+{
+  "appName": "Təhlə Tətbiqi",
+  "nav": {
+    "directory": "Kataloq",
+    "feed": "Xəbərlər",
+    "events": "Tədbirlər",
+    "familyTree": "Ailə ağacı",
+    "friends": "Dostlar",
+    "addPerson": "Şəxs əlavə et",
+    "settings": "Parametrlər",
+    "signOut": "Çıxış",
+    "master": "Master"
+  },
+  "lock": {
+    "title": "Ailə hesabınıza daxil olun",
+    "firstName": "Ad",
+    "lastName": "Soyad",
+    "password": "Parol",
+    "signIn": "Daxil ol",
+    "createAccount": "Hesab yarat",
+    "noAccount": "Hesabınız yoxdur?"
+  },
+  "register": {
+    "title": "Hesab yarat",
+    "subtitle": "Ad və parolunuzla qeydiyyatdan keçin",
+    "passwordMin": "Parol (minimum 6 simvol)",
+    "createAccount": "Hesab yarat",
+    "hasAccount": "Artıq hesabınız var?",
+    "signIn": "Daxil ol"
+  },
+  "feed": {
+    "title": "Ailə xəbərləri",
+    "subtitle": "Evlilik, yeni iş yeri, vəfat, doğum və digər yenilikləri paylaşın.",
+    "type": "Növ",
+    "content": "Məzmun",
+    "contentPlaceholder": "Nə xəbər?",
+    "relatedPerson": "Əlaqəli şəxs (isteğe bağlı)",
+    "none": "Yoxdur",
+    "post": "Paylaş",
+    "noPosts": "Hələ paylaşım yoxdur. Yuxarıdan paylaşın.",
+    "types": {
+      "MARRIAGE": "Evlilik",
+      "NEW_WORKPLACE": "Yeni iş yeri",
+      "DEATH": "Vəfat",
+      "BIRTH": "Doğum",
+      "OTHER": "Digər"
+    }
+  },
+  "friends": {
+    "title": "Dostlar",
+    "subtitle": "Dostlar ailə ağacınızı yalnız ad və soyadla görə bilər (məxfilik).",
+    "yourFriends": "Dostlarınız",
+    "noFriends": "Hələ dost yoxdur. Yuxarıdan əlavə edin.",
+    "addFriend": "Dost əlavə et",
+    "remove": "Sil",
+    "noUsersToAdd": "Əlavə ediləcək başqa istifadəçi yoxdur və ya hamı artıq dostunuzdur."
+  },
+  "settings": {
+    "title": "Parametrlər",
+    "back": "Geri",
+    "changePassword": "Parolu dəyiş",
+    "currentPassword": "Cari parol",
+    "newPassword": "Yeni parol (minimum 6 simvol)",
+    "changePasswordButton": "Parolu dəyiş",
+    "passwordChanged": "Parol dəyişdirildi.",
+    "exportImport": "İxrac / İdxal",
+    "masterOnly": "Yalnız Master",
+    "masterOnlyDesc": "Bütün məlumatları sıfırlayın (şəxslər, istifadəçilər, dostlar, xəbərlər). Bunu yalnız master hesab edə bilər.",
+    "resetAppData": "Məlumatları sıfırla"
+  },
+  "common": {
+    "back": "Geri",
+    "edit": "Redaktə",
+    "viewFullTree": "Tam ailə ağacı",
+    "backToDirectory": "Kataloqa qayıt",
+    "language": "Dil"
+  },
+  "tree": {
+    "title": "Ailə ağacı",
+    "privacyNotice": "Məxfilik: yalnız adlar göstərilir. Dost kimi baxırsınız.",
+    "siblings": "Qardaş/bacılar"
+  },
+  "people": {
+    "addPerson": "Şəxs əlavə et",
+    "quickAdd": "Sürətli əlavə",
+    "fullForm": "Şəxs əlavə et (tam form)",
+    "miniTree": "Mini ağac görünüşü"
+  },
+  "profileComplete": {
+    "title": "Profilinizi tamamlayın",
+    "subtitle": "Ailə kataloqunda görünməyiniz və başqalarının sizinlə əlaqə qura bilməsi üçün məlumatlarınızı əlavə edin."
+  },
+  "form": {
+    "identity": "Şəxsiyyət",
+    "firstName": "Ad",
+    "middleName": "Ata adı",
+    "lastName": "Soyad",
+    "gender": "Cins",
+    "maritalStatus": "Ailə vəziyyəti",
+    "birthDate": "Doğum tarixi",
+    "deathDate": "Vəfat tarixi",
+    "contact": "Əlaqə",
+    "location": "Ünvan",
+    "work": "İş",
+    "notesAndTags": "Qeydlər və teqlər",
+    "country": "Ölkə",
+    "city": "Şəhər",
+    "address": "Ünvan",
+    "occupation": "Peşə",
+    "workplace": "İş yeri",
+    "notes": "Qeydlər",
+    "tags": "Teqlər",
+    "label": "Etiket",
+    "number": "Nömrə",
+    "email": "E-poçt",
+    "addPhone": "+ Telefon",
+    "addEmail": "+ E-poçt",
+    "male": "Kişi",
+    "female": "Qadın",
+    "other": "Digər",
+    "single": "Subay",
+    "married": "Evli",
+    "divorced": "Boşanmış",
+    "widowed": "Dul",
+    "save": "Saxla",
+    "createPerson": "Şəxs yarat",
+    "cancel": "Ləğv et"
+  },
+  "users": {
+    "addUser": "İstifadəçi əlavə et",
+    "addUserSubtitle": "Yeni ailə üzvü hesabı əlavə edin.",
+    "userAdded": "İstifadəçi əlavə edildi. Təyin etdiyiniz parolla daxil ola bilər.",
+    "onlyAdminCanAdd": "Yalnız ailə admini yeni hesab aça bilər.",
+    "contactAdminToGetAccount": "Ailə adminindən sizi əlavə etməsini xahiş edin, sonra daxil olun.",
+    "manageUsers": "İstifadəçiləri idarə et",
+    "deleteUser": "Sil",
+    "deleteMyAccount": "Hesabımı sil",
+    "defaultTreeRoot": "Varsayılan ailə ağacı",
+    "defaultTreeRootDesc": "Ailə ağacı sekmesi açılanda göstərilən şəxs (yalnız admin)."
+  },
+  "events": {
+    "title": "Tədbirlər",
+    "newEvent": "Yeni tədbir",
+    "eventName": "Tədbir adı",
+    "date": "Tarix",
+    "place": "Yer",
+    "invitees": "Dəvət siyahısı",
+    "inviteesVisible": "Dəvət edilənlərə görünür",
+    "create": "Tədbir yarat",
+    "noEvents": "Hələ tədbir yoxdur.",
+    "participants": "İştirakçılar"
+  }
+}

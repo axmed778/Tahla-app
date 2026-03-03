@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Settings {
+  id                  Int       @id @default(1)
+  pinHash             String?
+  defaultTreePersonId String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model User {
+  id           String   @id @default(uuid())
+  firstName    String
+  lastName     String
+  passwordHash String
+  isMaster     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  person          Person?
+  friendshipsA    Friendship[] @relation("UserA")
+  friendshipsB    Friendship[] @relation("UserB")
+  posts           Post[]
+  createdEvents   Event[]      @relation("EventCreator")
+  eventParticipants EventParticipant[]
+
+  @@unique([firstName, lastName])
+  @@index([firstName, lastName])
+}
+
+model Person {
+  id           String    @id @default(uuid())
+  firstName    String
+  lastName     String
+  middleName   String?
+  gender       String
+  birthDate    DateTime?
+  deathDate    DateTime?
+  country      String?
+  city         String?
+  address      String?
+  occupation   String?
+  workplace    String?
+  maritalStatus String
+  notes        String?
+  userId       String?   @unique
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user         User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  phones       PersonPhone[]
+  emails       PersonEmail[]
+  tags         PersonTag[]
+  relationshipsFrom Relationship[] @relation("FromPerson")
+  relationshipsTo   Relationship[] @relation("ToPerson")
+  posts        Post[]
+
+  @@index([lastName, firstName])
+  @@index([city])
+  @@index([userId])
+}
+
+model Friendship {
+  id       String   @id @default(uuid())
+  userAId  String
+  userBId  String
+  createdAt DateTime @default(now())
+
+  userA User @relation("UserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB User @relation("UserB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  @@unique([userAId, userBId])
+  @@index([userAId])
+  @@index([userBId])
+}
+
+model Post {
+  id               String   @id @default(uuid())
+  type             String   // MARRIAGE, NEW_WORKPLACE, DEATH, BIRTH, OTHER
+  content          String
+  authorId         String
+  relatedPersonId  String?
+  createdAt        DateTime @default(now())
+
+  author  User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  relatedPerson Person? @relation(fields: [relatedPersonId], references: [id], onDelete: SetNull)
+
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+model Event {
+  id        String   @id @default(uuid())
+  name      String
+  date      DateTime
+  place     String?
+  createdById String
+  createdAt DateTime @default(now())
+
+  createdBy User @relation("EventCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  participants EventParticipant[]
+
+  @@index([createdById])
+  @@index([date])
+}
+
+model EventParticipant {
+  id       String   @id @default(uuid())
+  eventId  String
+  userId   String
+  createdAt DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+}
+
+model PersonPhone {
+  id       String @id @default(uuid())
+  personId String
+  label    String?
+  number   String
+
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@index([number])
+  @@index([personId])
+}
+
+model PersonEmail {
+  id       String @id @default(uuid())
+  personId String
+  label    String?
+  email    String
+
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@index([email])
+  @@index([personId])
+}
+
+model Tag {
+  id   String @id @default(uuid())
+  name String @unique
+
+  people PersonTag[]
+}
+
+model PersonTag {
+  personId String
+  tagId    String
+
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([personId, tagId])
+  @@unique([personId, tagId])
+  @@index([personId])
+  @@index([tagId])
+}
+
+model Relationship {
+  id          String         @id @default(uuid())
+  fromPersonId String
+  toPersonId   String
+  type        String
+  label       String?
+  createdAt   DateTime       @default(now())
+
+  fromPerson Person @relation("FromPerson", fields: [fromPersonId], references: [id], onDelete: Cascade)
+  toPerson   Person @relation("ToPerson", fields: [toPersonId], references: [id], onDelete: Cascade)
+
+  @@unique([fromPersonId, toPersonId, type])
+  @@index([fromPersonId])
+  @@index([toPersonId])
+}
+
+// SQLite does not support enums; values stored as strings (e.g. MALE, FEMALE, SINGLE, MARRIED, PARENT, CHILD, etc.)
