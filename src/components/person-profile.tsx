@@ -9,6 +9,8 @@ type PersonWithRelations = Person & {
   relationshipsTo: (Relationship & { fromPerson: Person })[];
 };
 
+type TranslateFn = (key: string) => string;
+
 type Props = {
   person: PersonWithRelations;
   age: number | null;
@@ -18,9 +20,13 @@ type Props = {
   siblings: Person[];
   spouse: Person | null;
   other: { person: Person; label: string | null }[];
+  t: TranslateFn;
 };
 
-export function PersonProfile({ person, age, formatDate, parents, children, siblings, spouse, other }: Props) {
+const personName = (p: Person) => `${p.firstName} ${p.middleName ? `${p.middleName} ` : ""}${p.lastName}`;
+
+export function PersonProfile({ person, age, formatDate, parents, children, siblings, spouse, other, t }: Props) {
+  const currentName = personName(person);
   return (
     <div className="space-y-6">
       <div>
@@ -29,9 +35,9 @@ export function PersonProfile({ person, age, formatDate, parents, children, sibl
         </h2>
         {person.tags.length > 0 && (
           <div className="mt-1 flex flex-wrap gap-1">
-            {person.tags.map((t) => (
-              <span key={t.tag.id} className="rounded-full bg-muted px-2 py-0.5 text-xs">
-                {t.tag.name}
+            {person.tags.map((tag) => (
+              <span key={tag.tag.id} className="rounded-full bg-muted px-2 py-0.5 text-xs">
+                {tag.tag.name}
               </span>
             ))}
           </div>
@@ -39,30 +45,30 @@ export function PersonProfile({ person, age, formatDate, parents, children, sibl
       </div>
 
       <section className="rounded-lg border p-4">
-        <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide mb-3">Identity</h3>
+        <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide mb-3">{t("profile.identity")}</h3>
         <dl className="grid gap-2 text-sm">
-          <div><dt className="text-muted-foreground">Gender</dt><dd>{person.gender}</dd></div>
-          {person.birthDate && <div><dt className="text-muted-foreground">Birth date</dt><dd>{formatDate(person.birthDate)}</dd></div>}
-          {person.deathDate && <div><dt className="text-muted-foreground">Death date</dt><dd>{formatDate(person.deathDate)}</dd></div>}
-          {age != null && <div><dt className="text-muted-foreground">Age</dt><dd>{age} years</dd></div>}
+          <div><dt className="text-muted-foreground">{t("profile.gender")}</dt><dd>{person.gender}</dd></div>
+          {person.birthDate && <div><dt className="text-muted-foreground">{t("profile.birthDate")}</dt><dd>{formatDate(person.birthDate)}</dd></div>}
+          {person.deathDate && <div><dt className="text-muted-foreground">{t("profile.deathDate")}</dt><dd>{formatDate(person.deathDate)}</dd></div>}
+          {age != null && <div><dt className="text-muted-foreground">{t("profile.age")}</dt><dd>{age} {t("profile.years")}</dd></div>}
         </dl>
       </section>
 
       <section className="rounded-lg border p-4">
-        <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide mb-3">Contact</h3>
+        <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide mb-3">{t("profile.contact")}</h3>
         {person.phones.length === 0 && person.emails.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No contact info.</p>
+          <p className="text-sm text-muted-foreground">{t("profile.noContactInfo")}</p>
         ) : (
           <dl className="space-y-2 text-sm">
             {person.phones.map((p) => (
               <div key={p.id}>
-                <dt className="text-muted-foreground">{p.label || "Phone"}</dt>
+                <dt className="text-muted-foreground">{p.label || t("profile.phone")}</dt>
                 <dd><a href={`tel:${p.number}`} className="underline">{p.number}</a></dd>
               </div>
             ))}
             {person.emails.map((e) => (
               <div key={e.id}>
-                <dt className="text-muted-foreground">{e.label || "Email"}</dt>
+                <dt className="text-muted-foreground">{e.label || t("profile.email")}</dt>
                 <dd><a href={`mailto:${e.email}`} className="underline">{e.email}</a></dd>
               </div>
             ))}
@@ -71,82 +77,88 @@ export function PersonProfile({ person, age, formatDate, parents, children, sibl
       </section>
 
       <section className="rounded-lg border p-4">
-        <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide mb-3">Location</h3>
+        <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide mb-3">{t("profile.location")}</h3>
         {(person.country || person.city || person.address) ? (
           <dl className="grid gap-2 text-sm">
-            {person.country && <div><dt className="text-muted-foreground">Country</dt><dd>{person.country}</dd></div>}
-            {person.city && <div><dt className="text-muted-foreground">City</dt><dd>{person.city}</dd></div>}
-            {person.address && <div><dt className="text-muted-foreground">Address</dt><dd>{person.address}</dd></div>}
+            {person.country && <div><dt className="text-muted-foreground">{t("profile.country")}</dt><dd>{person.country}</dd></div>}
+            {person.city && <div><dt className="text-muted-foreground">{t("profile.city")}</dt><dd>{person.city}</dd></div>}
+            {person.address && <div><dt className="text-muted-foreground">{t("profile.address")}</dt><dd>{person.address}</dd></div>}
           </dl>
         ) : (
-          <p className="text-sm text-muted-foreground">No location.</p>
+          <p className="text-sm text-muted-foreground">{t("profile.noLocation")}</p>
         )}
       </section>
 
       <section className="rounded-lg border p-4">
-        <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide mb-3">Work</h3>
+        <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide mb-3">{t("profile.work")}</h3>
         {(person.occupation || person.workplace) ? (
           <dl className="grid gap-2 text-sm">
-            {person.occupation && <div><dt className="text-muted-foreground">Occupation</dt><dd>{person.occupation}</dd></div>}
-            {person.workplace && <div><dt className="text-muted-foreground">Workplace</dt><dd>{person.workplace}</dd></div>}
+            {person.occupation && <div><dt className="text-muted-foreground">{t("profile.occupation")}</dt><dd>{person.occupation}</dd></div>}
+            {person.workplace && <div><dt className="text-muted-foreground">{t("profile.workplace")}</dt><dd>{person.workplace}</dd></div>}
           </dl>
         ) : (
-          <p className="text-sm text-muted-foreground">No work info.</p>
+          <p className="text-sm text-muted-foreground">{t("profile.noWorkInfo")}</p>
         )}
       </section>
 
       <section className="rounded-lg border p-4">
-        <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide mb-3">Status</h3>
-        <p className="text-sm">Marital status: {person.maritalStatus}</p>
+        <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide mb-3">{t("profile.status")}</h3>
+        <p className="text-sm">{t("profile.maritalStatus")}: {person.maritalStatus}</p>
       </section>
 
       {(parents.length > 0 || spouse || children.length > 0 || siblings.length > 0 || other.length > 0) && (
         <section className="rounded-lg border p-4">
-          <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide mb-3">Relationships</h3>
+          <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide mb-3">{t("profile.relationships")}</h3>
           <div className="space-y-3 text-sm">
             {parents.length > 0 && (
               <div>
-                <dt className="text-muted-foreground font-medium mb-1">Parents</dt>
-                <dd className="flex flex-wrap gap-2">
+                <dt className="text-muted-foreground font-medium mb-1">{t("profile.parents")}</dt>
+                <dd className="flex flex-wrap gap-x-2 gap-y-1">
                   {parents.map((p) => (
-                    <Link key={p.id} href={`/people/${p.id}`} className="underline">{p.firstName} {p.lastName}</Link>
+                    <span key={p.id}>
+                      <Link href={`/people/${p.id}`} className="underline">{personName(p)}</Link>
+                      <span className="text-muted-foreground"> — {t("profile.parentOf")} {currentName}</span>
+                    </span>
                   ))}
                 </dd>
               </div>
             )}
             {spouse && (
               <div>
-                <dt className="text-muted-foreground font-medium mb-1">Spouse</dt>
-                <dd><Link href={`/people/${spouse.id}`} className="underline">{spouse.firstName} {spouse.lastName}</Link></dd>
+                <dt className="text-muted-foreground font-medium mb-1">{t("profile.spouse")}</dt>
+                <dd><Link href={`/people/${spouse.id}`} className="underline">{personName(spouse)}</Link></dd>
               </div>
             )}
             {children.length > 0 && (
               <div>
-                <dt className="text-muted-foreground font-medium mb-1">Children</dt>
-                <dd className="flex flex-wrap gap-2">
+                <dt className="text-muted-foreground font-medium mb-1">{t("profile.children")}</dt>
+                <dd className="flex flex-wrap gap-x-2 gap-y-1">
                   {children.map((p) => (
-                    <Link key={p.id} href={`/people/${p.id}`} className="underline">{p.firstName} {p.lastName}</Link>
+                    <span key={p.id}>
+                      <Link href={`/people/${p.id}`} className="underline">{personName(p)}</Link>
+                      <span className="text-muted-foreground"> — {t("profile.childOf")} {currentName}</span>
+                    </span>
                   ))}
                 </dd>
               </div>
             )}
             {siblings.length > 0 && (
               <div>
-                <dt className="text-muted-foreground font-medium mb-1">Siblings</dt>
+                <dt className="text-muted-foreground font-medium mb-1">{t("profile.siblings")}</dt>
                 <dd className="flex flex-wrap gap-2">
                   {siblings.map((p) => (
-                    <Link key={p.id} href={`/people/${p.id}`} className="underline">{p.firstName} {p.lastName}</Link>
+                    <Link key={p.id} href={`/people/${p.id}`} className="underline">{personName(p)}</Link>
                   ))}
                 </dd>
               </div>
             )}
             {other.length > 0 && (
               <div>
-                <dt className="text-muted-foreground font-medium mb-1">Other</dt>
+                <dt className="text-muted-foreground font-medium mb-1">{t("profile.other")}</dt>
                 <dd className="flex flex-wrap gap-2">
                   {other.map(({ person: p, label }) => (
                     <Link key={p.id} href={`/people/${p.id}`} className="underline">
-                      {p.firstName} {p.lastName}{label ? ` (${label})` : ""}
+                      {personName(p)}{label ? ` (${label})` : ""}
                     </Link>
                   ))}
                 </dd>
@@ -158,7 +170,7 @@ export function PersonProfile({ person, age, formatDate, parents, children, sibl
 
       {person.notes && (
         <section className="rounded-lg border p-4">
-          <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide mb-3">Notes</h3>
+          <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide mb-3">{t("profile.notes")}</h3>
           <p className="text-sm whitespace-pre-wrap">{person.notes}</p>
         </section>
       )}

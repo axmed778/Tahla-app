@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
 import { getCurrentUser } from "@/actions/auth";
+import { getLocale, getT } from "@/lib/i18n";
 import { AppHeader } from "@/components/app-header";
 import { getAge, formatDate } from "@/lib/utils";
 import { PersonProfile } from "@/components/person-profile";
@@ -10,7 +11,7 @@ import { AddRelationshipForm } from "@/components/add-relationship-form";
 
 export default async function PersonPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const user = await getCurrentUser();
+  const [user, t] = await Promise.all([getCurrentUser(), getLocale().then((l) => getT(l))]);
   const person = await prisma.person.findUnique({
     where: { id },
     include: {
@@ -42,10 +43,10 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
       <AppHeader user={user} />
       <main className="container mx-auto max-w-3xl px-4 py-6">
         <div className="mb-6 flex items-center justify-between">
-          <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">← Back to directory</Link>
+          <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">← {t("common.backToDirectory")}</Link>
           <div className="flex gap-3">
-            <Link href={`/tree/${id}`} className="text-sm font-medium" target="_blank" rel="noopener noreferrer">View full tree</Link>
-            <Link href={`/people/${id}/edit`} className="text-sm font-medium">Edit</Link>
+            <Link href={`/tree/${id}`} className="text-sm font-medium" target="_blank" rel="noopener noreferrer">{t("common.viewFullTree")}</Link>
+            <Link href={`/people/${id}/edit`} className="text-sm font-medium">{t("common.edit")}</Link>
           </div>
         </div>
         <PersonProfile
@@ -57,12 +58,13 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           siblings={siblings}
           spouse={spouse ?? null}
           other={other}
+          t={t}
         />
         <section className="mt-6">
           <AddRelationshipForm fromPersonId={id} otherPeople={allPeople} />
         </section>
         <section className="mt-8">
-          <h3 className="text-lg font-semibold mb-4">Mini tree view</h3>
+          <h3 className="text-lg font-semibold mb-4">{t("profile.miniTreeView")}</h3>
           <MiniTree
             person={person}
             parents={parents}

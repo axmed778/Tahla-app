@@ -24,7 +24,7 @@ export async function UsersSection({
     <section className="mb-8">
       <h3 className="font-medium mb-3">{t("users.manageUsers")}</h3>
       <p className="text-sm text-muted-foreground mb-2">
-        {isMaster ? "Only you (admin) can add or remove user accounts." : "Only the admin can add or remove users."}
+        {isMaster ? t("users.onlyOwnerCanManage") : t("users.onlyOwnerCanManageOther")}
       </p>
       {isMaster && (
         <Link href="/register">

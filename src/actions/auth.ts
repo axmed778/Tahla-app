@@ -89,6 +89,7 @@ export async function getCurrentUser() {
   };
 }
 
+/** Users can only change their own password (no target userId; always session.userId). */
 export async function changePassword(formData: FormData) {
   const session = await getSession();
   if (!session) return { error: "Not logged in" };
@@ -111,10 +112,13 @@ export async function changePassword(formData: FormData) {
   return { success: true };
 }
 
-/** Master only: create a new user (firstName, lastName, password). */
+// Account changes (add/delete user, change password) are allowed only for:
+// - The user themselves (for their own account: change password, delete self)
+// - The app owner (isMaster) for any account: add user, delete any user except self
+/** App owner only: create a new user (firstName, lastName, password). */
 export async function addUser(formData: FormData) {
   const session = await getSession();
-  if (!session?.isMaster) return { error: "Only the admin can add users." };
+  if (!session?.isMaster) return { error: "Only the app owner can add users." };
   const parsed = registerSchema.safeParse({
     firstName: (formData.get("firstName") ?? "").toString().trim(),
     lastName: (formData.get("lastName") ?? "").toString().trim(),
@@ -142,7 +146,7 @@ export async function addUser(formData: FormData) {
   return { success: true };
 }
 
-/** Master can delete any user except themselves. User can delete their own account. */
+/** Only the app owner (master) can delete other users; any user can delete their own account. */
 export async function deleteUser(formData: FormData) {
   const session = await getSession();
   if (!session) return { error: "Not logged in" };
@@ -152,7 +156,7 @@ export async function deleteUser(formData: FormData) {
   if (!target) return { error: "User not found" };
   const isSelf = session.userId === userId;
   const isMaster = session.isMaster;
-  if (!isSelf && !isMaster) return { error: "Only the admin can delete other users." };
+  if (!isSelf && !isMaster) return { error: "Only the app owner can delete other users' accounts." };
   if (isSelf) {
     await clearSession();
   }
@@ -170,7 +174,7 @@ export async function deleteUser(formData: FormData) {
 
 export async function setDefaultTreePerson(formData: FormData) {
   const session = await getSession();
-  if (!session?.isMaster) return { error: "Only admin can set default tree." };
+  if (!session?.isMaster) return { error: "Only the app owner can set default tree." };
   const personId = (formData.get("personId") ?? "").toString() || null;
   const { revalidatePath } = await import("next/cache");
   await prisma.settings.upsert({
@@ -185,7 +189,7 @@ export async function setDefaultTreePerson(formData: FormData) {
 
 export async function resetAppData() {
   const session = await getSession();
-  if (!session?.isMaster) return { error: "Only the master account can reset app data." };
+  if (!session?.isMaster) return { error: "Only the app owner can reset app data." };
   await clearSession();
   await prisma.eventParticipant.deleteMany({});
   await prisma.event.deleteMany({});

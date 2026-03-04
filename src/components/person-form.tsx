@@ -172,16 +172,17 @@ export function PersonForm({ personId, initial, tags, linkToCurrentUser }: Props
           <div className="space-y-2">
             <Label>{t("form.country")}</Label>
             <Select
-              value={watch("country") || ""}
+              value={watch("country") || "__none__"}
               onValueChange={(v) => {
-                setValue("country", v);
-                const cities = getCities(v);
+                const country = v === "__none__" ? "" : v;
+                setValue("country", country);
+                const cities = getCities(country);
                 if (!cities.includes(watch("city") || "")) setValue("city", "");
               }}
             >
               <SelectTrigger><SelectValue placeholder={t("form.country")} /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">—</SelectItem>
+                <SelectItem value="__none__">—</SelectItem>
                 {COUNTRIES.map((c) => (
                   <SelectItem key={c} value={c}>{c}</SelectItem>
                 ))}
@@ -200,12 +201,12 @@ export function PersonForm({ personId, initial, tags, linkToCurrentUser }: Props
               const cityOptions = [...new Set([currentCity, ...cities].filter(Boolean))].sort();
               return (
                 <Select
-                  value={currentCity}
-                  onValueChange={(v) => setValue("city", v)}
+                  value={currentCity || "__none__"}
+                  onValueChange={(v) => setValue("city", v === "__none__" ? "" : v)}
                 >
                   <SelectTrigger><SelectValue placeholder={t("form.city")} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">—</SelectItem>
+                    <SelectItem value="__none__">—</SelectItem>
                     {cityOptions.map((c) => (
                       <SelectItem key={c} value={c}>{c}</SelectItem>
                     ))}

@@ -150,7 +150,7 @@ async function main() {
 main()
   .then(() => prisma.$disconnect())
   .catch((e) => {
-    console.error(e);
+    console.error("Seed error:", e);
     prisma.$disconnect();
     process.exit(1);
   });
