@@ -14,6 +14,7 @@ import {
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { Person, PersonPhone, PersonTag, Tag } from "@prisma/client";
 import Link from "next/link";
+import { formatPersonName } from "@/lib/utils";
 
 type PersonWithRelations = Person & {
   phones: PersonPhone[];
@@ -144,7 +145,7 @@ export function DirectoryClient({
                       className="flex flex-wrap items-center justify-between gap-2 py-3 px-1 hover:bg-muted/50 rounded-md -mx-1"
                     >
                       <span className="font-medium">
-                        {person.firstName} {person.lastName}
+                        {formatPersonName(person)}
                         {person.city && (
                           <span className="text-muted-foreground font-normal"> · {person.city}</span>
                         )}

@@ -5,6 +5,7 @@ const MAX_DEPTH = 3;
 type PersonNode = {
   id: string;
   firstName: string;
+  middleName: string | null;
   lastName: string;
   parents: PersonNode[];
   spouse: PersonNode | null;
@@ -41,6 +42,7 @@ export async function buildTree(personId: string, depth = 0): Promise<PersonNode
   const node: PersonNode = {
     id: person.id,
     firstName: person.firstName,
+    middleName: person.middleName ?? null,
     lastName: person.lastName,
     parents: [],
     spouse: null,

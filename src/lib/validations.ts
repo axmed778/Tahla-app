@@ -13,17 +13,18 @@ export const changePinSchema = z.object({
   newPin: pinSchema,
 }).refine((d) => d.oldPin !== d.newPin, { message: "New PIN must differ from old PIN", path: ["newPin"] });
 
-// User auth (name, surname, password)
+// User auth (email, name, password)
 const nameSchema = z.string().min(1, "Required").max(100);
+const emailSchema = z.string().email("Invalid email").max(255);
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
 
 export const loginSchema = z.object({
-  firstName: nameSchema,
-  lastName: nameSchema,
+  email: emailSchema,
   password: passwordSchema,
 });
 
 export const registerSchema = z.object({
+  email: emailSchema,
   firstName: nameSchema,
   lastName: nameSchema,
   password: passwordSchema,
@@ -34,12 +35,18 @@ export const changePasswordSchema = z.object({
   newPassword: passwordSchema,
 }).refine((d) => d.currentPassword !== d.newPassword, { message: "New password must differ", path: ["newPassword"] });
 
+/** Master only: set another user's password (no current password required). */
+export const setPasswordByMasterSchema = z.object({
+  userId: z.string().uuid(),
+  newPassword: passwordSchema,
+});
+
 export const phoneSchema = z.object({
   id: z.string().uuid().optional(),
   label: z.string().optional(),
   number: z.string().min(1, "Number is required"),
 });
-export const emailSchema = z.object({
+export const personEmailSchema = z.object({
   id: z.string().uuid().optional(),
   label: z.string().optional(),
   email: z.string().email("Invalid email"),
@@ -67,7 +74,7 @@ export const personFormSchema = z.object({
   maritalStatus: z.enum(["SINGLE", "MARRIED", "DIVORCED", "WIDOWED", "OTHER"]),
   notes: z.string().optional(),
   phones: z.array(phoneSchema).default([]),
-  emails: z.array(emailSchema).default([]),
+  emails: z.array(personEmailSchema).default([]),
   tagIds: z.array(z.string().uuid()).default([]),
 });
 

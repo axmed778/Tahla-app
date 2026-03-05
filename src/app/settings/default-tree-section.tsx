@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { setDefaultTreePerson } from "@/actions/auth";
 import { getLocale, getT } from "@/lib/i18n";
+import { formatPersonName } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 export async function DefaultTreeSection() {
@@ -8,7 +9,7 @@ export async function DefaultTreeSection() {
     prisma.settings.findUnique({ where: { id: 1 } }),
     prisma.person.findMany({
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
-      select: { id: true, firstName: true, lastName: true },
+      select: { id: true, firstName: true, middleName: true, lastName: true },
     }),
     getLocale(),
     getLocale().then((l) => getT(l)),
@@ -27,7 +28,7 @@ export async function DefaultTreeSection() {
           <option value="">— {t("feed.none")} —</option>
           {people.map((p) => (
             <option key={p.id} value={p.id}>
-              {p.firstName} {p.lastName}
+              {formatPersonName(p)}
             </option>
           ))}
         </select>

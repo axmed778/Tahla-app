@@ -21,6 +21,7 @@ export async function getDirectoryPeople(params: {
     const term = q.trim();
     where.OR = [
       { firstName: { contains: term } },
+      { middleName: { contains: term } },
       { lastName: { contains: term } },
       { city: { contains: term } },
       { workplace: { contains: term } },

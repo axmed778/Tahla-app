@@ -35,8 +35,12 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const siblings = person.relationshipsTo.filter((r) => r.type === "SIBLING").map((r) => r.fromPerson);
   const spouse = person.relationshipsTo.find((r) => r.type === "SPOUSE")?.fromPerson ?? person.relationshipsFrom.find((r) => r.type === "SPOUSE")?.toPerson;
   const other = [...person.relationshipsTo.filter((r) => r.type === "OTHER"), ...person.relationshipsFrom.filter((r) => r.type === "OTHER")].map((r) =>
-    r.fromPersonId === person.id ? { person: r.toPerson, label: r.label } : { person: r.fromPerson, label: r.label }
+    r.fromPersonId === person.id
+      ? { person: r.toPerson, label: r.label, fromPersonId: r.fromPersonId, toPersonId: r.toPersonId }
+      : { person: r.fromPerson, label: r.label, fromPersonId: r.fromPersonId, toPersonId: r.toPersonId }
   );
+
+  const canEdit = !!user && (person.userId === user.id || user.isMaster);
 
   return (
     <div className="min-h-screen bg-background">
@@ -59,6 +63,8 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           spouse={spouse ?? null}
           other={other}
           t={t}
+          canEdit={canEdit}
+          currentUserPersonId={user?.personId ?? null}
         />
         <section className="mt-6">
           <AddRelationshipForm fromPersonId={id} otherPeople={allPeople} />

@@ -13,6 +13,8 @@
   },
   "lock": {
     "title": "Ailə hesabınıza daxil olun",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
     "firstName": "Ad",
     "lastName": "Soyad",
     "password": "Parol",
@@ -22,7 +24,7 @@
   },
   "register": {
     "title": "Hesab yarat",
-    "subtitle": "Ad və parolunuzla qeydiyyatdan keçin",
+    "subtitle": "Email, ad və parolunuzla qeydiyyatdan keçin",
     "passwordMin": "Parol (minimum 6 simvol)",
     "createAccount": "Hesab yarat",
     "hasAccount": "Artıq hesabınız var?",
@@ -35,6 +37,9 @@
     "content": "Məzmun",
     "contentPlaceholder": "Nə xəbər?",
     "relatedPerson": "Əlaqəli şəxs (isteğe bağlı)",
+    "relatedPeople": "Əlaqəli şəxslər (isteğe bağlı)",
+    "addPerson": "Şəxs əlavə et",
+    "noMorePeople": "Hamısı əlavə edilib",
     "none": "Yoxdur",
     "post": "Paylaş",
     "noPosts": "Hələ paylaşım yoxdur. Yuxarıdan paylaşın.",
@@ -58,6 +63,10 @@
   "settings": {
     "title": "Parametrlər",
     "back": "Geri",
+    "myProfile": "Mənim profilim",
+    "myProfileDesc": "Ailə kataloqundakı profilini redaktə edin.",
+    "completeProfile": "Profili tamamlayın",
+    "completeProfileDesc": "Kataloqda görünmək və sizinlə əlaqə qura bilmək üçün məlumatlarınızı əlavə edin.",
     "changePassword": "Parolu dəyiş",
     "currentPassword": "Cari parol",
     "newPassword": "Yeni parol (minimum 6 simvol)",
@@ -73,12 +82,35 @@
     "edit": "Redaktə",
     "viewFullTree": "Tam ailə ağacı",
     "backToDirectory": "Kataloqa qayıt",
-    "language": "Dil"
+    "language": "Dil",
+    "menu": "Menyu"
   },
   "tree": {
     "title": "Ailə ağacı",
     "privacyNotice": "Məxfilik: yalnız adlar göstərilir. Dost kimi baxırsınız.",
-    "siblings": "Qardaş/bacılar"
+    "siblings": "Qardaş/bacılar",
+    "parents": "Valideynlər",
+    "children": "Uşaqlar",
+    "spouse": "Həyat yoldaşı"
+  },
+  "addRelationship": {
+    "title": "Əlaqə əlavə et",
+    "description": "Bu şəxsi başqası ilə əlaqələndirin. Əlaqə hər iki istiqamətdə saxlanılır.",
+    "person": "Şəxs",
+    "type": "Növ",
+    "selectPerson": "Şəxs seçin",
+    "labelOptional": "Etiket (isteğe bağlı, məs. dayı, xala)",
+    "labelPlaceholder": "məs. dayı",
+    "add": "Əlavə et",
+    "parent": "Valideyn",
+    "child": "Uşaq",
+    "sibling": "Qardaş/bacı",
+    "spouse": "Həyat yoldaşı",
+    "other": "Digər"
+  },
+  "relationship": {
+    "remove": "Sil",
+    "removing": "Silinir…"
   },
   "profile": {
     "identity": "Şəxsiyyət",
@@ -169,6 +201,8 @@
     "onlyOwnerCanManage": "Yalnız siz (tətbiqin sahibi) istifadəçi hesabları əlavə və ya silə bilərsiniz. Başqa heç kim digər istifadəçilərin hesablarını dəyişə bilməz.",
     "onlyOwnerCanManageOther": "Yalnız tətbiqin sahibi istifadəçiləri əlavə və ya silə bilər. Siz yalnız öz hesabınızı dəyişə və ya silə bilərsiniz.",
     "onlyOwnerCanAddWhenLoggedIn": "Buradan başqa istifadəçiləri yalnız tətbiqin sahibi əlavə edə bilər. Öz hesabınızı Parametrlərdə dəyişə bilərsiniz.",
+    "setPassword": "Parol təyin et",
+    "setPasswordFor": "Parol təyin et:",
     "deleteUser": "Sil",
     "deleteMyAccount": "Hesabımı sil",
     "defaultTreeRoot": "Varsayılan ailə ağacı",

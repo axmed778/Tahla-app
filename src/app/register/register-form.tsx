@@ -28,6 +28,17 @@ export function RegisterForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
+        <Label htmlFor="email">{t("lock.email")}</Label>
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          placeholder={t("lock.emailPlaceholder")}
+          required
+        />
+      </div>
+      <div className="space-y-2">
         <Label htmlFor="firstName">{t("lock.firstName")}</Label>
         <Input
           id="firstName"

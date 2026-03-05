@@ -1,39 +1,109 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { logout } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "@/components/i18n-provider";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { Menu, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type User = { id: string; firstName: string; lastName: string; isMaster: boolean };
 
+const NAV_LINKS = [
+  { href: "/", key: "nav.directory" },
+  { href: "/feed", key: "nav.feed" },
+  { href: "/events", key: "nav.events" },
+  { href: "/tree", key: "nav.familyTree" },
+  { href: "/friends", key: "nav.friends" },
+  { href: "/people/new", key: "nav.addPerson" },
+  { href: "/settings", key: "nav.settings" },
+] as const;
+
 export function AppHeader({ user }: { user: User | null }) {
   const t = useTranslations();
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
-    <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur">
-      <div className="container mx-auto flex h-14 items-center justify-between px-4">
-        <h1 className="text-lg font-semibold">{t("appName")}</h1>
-        <nav className="flex items-center gap-3">
-          <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground">{t("nav.directory")}</Link>
-          <Link href="/feed" className="text-sm font-medium text-muted-foreground hover:text-foreground">{t("nav.feed")}</Link>
-          <Link href="/events" className="text-sm font-medium text-muted-foreground hover:text-foreground">{t("nav.events")}</Link>
-          <Link href="/tree" className="text-sm font-medium text-muted-foreground hover:text-foreground">{t("nav.familyTree")}</Link>
-          <Link href="/friends" className="text-sm font-medium text-muted-foreground hover:text-foreground">{t("nav.friends")}</Link>
-          <Link href="/people/new" className="text-sm font-medium text-muted-foreground hover:text-foreground">{t("nav.addPerson")}</Link>
-          <Link href="/settings" className="text-sm font-medium text-muted-foreground hover:text-foreground">{t("nav.settings")}</Link>
-          <LanguageSwitcher />
-          {user && (
-            <span className="text-sm text-muted-foreground">
-              {user.firstName} {user.lastName}
-              {user.isMaster && ` (${t("nav.master")})`}
-            </span>
-          )}
-          <form action={logout}>
-            <Button type="submit" variant="ghost" size="sm">{t("nav.signOut")}</Button>
-          </form>
+    <>
+      <header className="sticky top-0 z-30 border-b bg-background/95 backdrop-blur">
+        <div className="container mx-auto flex h-14 items-center gap-4 px-4">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 shrink-0"
+            aria-label="Open menu"
+            onClick={() => setMenuOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+
+          <h1 className="min-w-0 flex-1 text-center text-lg font-semibold">
+            {t("appName")}
+          </h1>
+
+          <div className="flex shrink-0 items-center gap-2">
+            <LanguageSwitcher />
+            {user && (
+              <span className="max-w-[120px] truncate text-sm text-muted-foreground sm:max-w-none">
+                {user.firstName} {user.lastName}
+                {user.isMaster && ` (${t("nav.master")})`}
+              </span>
+            )}
+            <form action={logout}>
+              <Button type="submit" variant="ghost" size="sm">
+                {t("nav.signOut")}
+              </Button>
+            </form>
+          </div>
+        </div>
+      </header>
+
+      {/* Overlay */}
+      <div
+        className={cn(
+          "fixed inset-0 z-40 bg-black/50 transition-opacity",
+          menuOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        )}
+        aria-hidden
+        onClick={() => setMenuOpen(false)}
+      />
+
+      {/* Slide-out menu */}
+      <aside
+        className={cn(
+          "fixed left-0 top-0 z-50 h-full w-64 border-r bg-background shadow-lg transition-transform duration-200 ease-out",
+          menuOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+        aria-label="Main navigation"
+      >
+        <div className="flex h-14 items-center justify-between border-b px-4">
+          <span className="font-semibold">{t("common.menu")}</span>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label="Close menu"
+            onClick={() => setMenuOpen(false)}
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+        <nav className="flex flex-col gap-0 p-2">
+          {NAV_LINKS.map(({ href, key }) => (
+            <Link
+              key={key}
+              href={href}
+              className="rounded-md px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
+              onClick={() => setMenuOpen(false)}
+            >
+              {t(key)}
+            </Link>
+          ))}
         </nav>
-      </div>
-    </header>
+      </aside>
+    </>
   );
 }

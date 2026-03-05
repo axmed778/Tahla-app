@@ -10,11 +10,12 @@ async function main() {
     update: {},
   });
 
-  // Master account (first user = master)
+  // Master account (first user = master). Login: master@example.com / master123
   const masterHash = await bcrypt.hash("master123", 10);
   await prisma.user.upsert({
-    where: { firstName_lastName: { firstName: "Master", lastName: "Account" } },
+    where: { email: "master@example.com" },
     create: {
+      email: "master@example.com",
       firstName: "Master",
       lastName: "Account",
       passwordHash: masterHash,

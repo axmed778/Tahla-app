@@ -1,20 +1,12 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
-
 type User = { id: string; firstName: string; lastName: string; isMaster: boolean; personId: string | null };
 
+/**
+ * ProfileGuard no longer redirects to /profile/complete.
+ * That page is shown only after first registration/login (in auth actions)
+ * or when the user opens it from Settings → "My profile" / "Complete your profile".
+ */
 export function ProfileGuard({ user, children }: { user: User | null; children: React.ReactNode }) {
-  const pathname = usePathname();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!user) return;
-    if (user.personId == null && pathname !== "/profile/complete") {
-      router.replace("/profile/complete");
-    }
-  }, [user, pathname, router]);
-
   return <>{children}</>;
 }

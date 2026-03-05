@@ -21,25 +21,23 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { addRelationship } from "@/actions/relationships";
+import { formatPersonName } from "@/lib/utils";
+import { useTranslations } from "@/components/i18n-provider";
 import type { Person } from "@prisma/client";
 
 type Props = { fromPersonId: string; otherPeople: Person[] };
 
-const REL_TYPES = [
-  { value: "PARENT", label: "Parent" },
-  { value: "CHILD", label: "Child" },
-  { value: "SIBLING", label: "Sibling" },
-  { value: "SPOUSE", label: "Spouse" },
-  { value: "OTHER", label: "Other" },
-] as const;
+/** Users can add only child, spouse, sibling, or other — not parent. */
+const REL_TYPES = ["CHILD", "SIBLING", "SPOUSE", "OTHER"] as const;
 
 export function AddRelationshipForm({ fromPersonId, otherPeople }: Props) {
+  const t = useTranslations();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [toPersonId, setToPersonId] = useState("");
-  const [type, setType] = useState<"PARENT" | "CHILD" | "SIBLING" | "SPOUSE" | "OTHER">("OTHER");
+  const [type, setType] = useState<"CHILD" | "SIBLING" | "SPOUSE" | "OTHER">("CHILD");
   const [label, setLabel] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -61,48 +59,48 @@ export function AddRelationshipForm({ fromPersonId, otherPeople }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">Add relationship</Button>
+        <Button variant="outline" size="sm">{t("addRelationship.title")}</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add relationship</DialogTitle>
-          <DialogDescription>Link this person to another. Relationship will be stored in both directions where applicable.</DialogDescription>
+          <DialogTitle>{t("addRelationship.title")}</DialogTitle>
+          <DialogDescription>{t("addRelationship.description")}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label>Person</Label>
+            <Label>{t("addRelationship.person")}</Label>
             <Select value={toPersonId} onValueChange={setToPersonId} required>
               <SelectTrigger>
-                <SelectValue placeholder="Select person" />
+                <SelectValue placeholder={t("addRelationship.selectPerson")} />
               </SelectTrigger>
               <SelectContent>
                 {otherPeople.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
-                    {p.firstName} {p.lastName}
+                    {formatPersonName(p)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>Type</Label>
+            <Label>{t("addRelationship.type")}</Label>
             <Select value={type} onValueChange={(v) => setType(v as typeof type)}>
               <SelectTrigger>
-                <SelectValue placeholder="Select type" />
+                <SelectValue placeholder={t("addRelationship.type")} />
               </SelectTrigger>
               <SelectContent>
                 {REL_TYPES.map((r) => (
-                  <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                  <SelectItem key={r} value={r}>{t(`addRelationship.${r.toLowerCase()}`)}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>Label (optional, e.g. uncle, aunt)</Label>
-            <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder="e.g. uncle" />
+            <Label>{t("addRelationship.labelOptional")}</Label>
+            <Input value={label} onChange={(e) => setLabel(e.target.value)} placeholder={t("addRelationship.labelPlaceholder")} />
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" disabled={loading}>Add</Button>
+          <Button type="submit" disabled={loading}>{t("addRelationship.add")}</Button>
         </form>
       </DialogContent>
     </Dialog>

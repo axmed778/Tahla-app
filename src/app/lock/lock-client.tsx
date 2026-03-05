@@ -30,24 +30,13 @@ export function LockPageClient() {
     <>
       <form onSubmit={handleLogin} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="firstName">{t("lock.firstName")}</Label>
+          <Label htmlFor="email">{t("lock.email")}</Label>
           <Input
-            id="firstName"
-            name="firstName"
-            type="text"
-            autoComplete="given-name"
-            placeholder={t("lock.firstName")}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="lastName">{t("lock.lastName")}</Label>
-          <Input
-            id="lastName"
-            name="lastName"
-            type="text"
-            autoComplete="family-name"
-            placeholder={t("lock.lastName")}
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            placeholder={t("lock.emailPlaceholder")}
             required
           />
         </div>

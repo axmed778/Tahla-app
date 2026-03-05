@@ -17,6 +17,7 @@ model Settings {
 
 model User {
   id           String   @id @default(uuid())
+  email        String   @unique
   firstName    String
   lastName     String
   passwordHash String
@@ -33,6 +34,7 @@ model User {
 
   @@unique([firstName, lastName])
   @@index([firstName, lastName])
+  @@index([email])
 }
 
 model Person {
@@ -60,7 +62,7 @@ model Person {
   tags         PersonTag[]
   relationshipsFrom Relationship[] @relation("FromPerson")
   relationshipsTo   Relationship[] @relation("ToPerson")
-  posts        Post[]
+  postRelatedPeople PostRelatedPerson[]
 
   @@index([lastName, firstName])
   @@index([city])
@@ -82,18 +84,29 @@ model Friendship {
 }
 
 model Post {
-  id               String   @id @default(uuid())
-  type             String   // MARRIAGE, NEW_WORKPLACE, DEATH, BIRTH, OTHER
-  content          String
-  authorId         String
-  relatedPersonId  String?
-  createdAt        DateTime @default(now())
+  id        String   @id @default(uuid())
+  type      String   // MARRIAGE, NEW_WORKPLACE, DEATH, BIRTH, OTHER
+  content   String
+  authorId  String
+  createdAt DateTime @default(now())
 
-  author  User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  relatedPerson Person? @relation(fields: [relatedPersonId], references: [id], onDelete: SetNull)
+  author         User                 @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  relatedPeople  PostRelatedPerson[]
 
   @@index([authorId])
   @@index([createdAt])
+}
+
+model PostRelatedPerson {
+  postId   String
+  personId String
+
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@id([postId, personId])
+  @@index([postId])
+  @@index([personId])
 }
 
 model Event {

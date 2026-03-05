@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { Person, PersonPhone, PersonEmail, PersonTag, Tag, Relationship } from "@prisma/client";
+import { formatPersonName } from "@/lib/utils";
+import { RemoveRelationshipButton } from "@/components/remove-relationship-button";
 
 type PersonWithRelations = Person & {
   phones: PersonPhone[];
@@ -19,19 +21,22 @@ type Props = {
   children: Person[];
   siblings: Person[];
   spouse: Person | null;
-  other: { person: Person; label: string | null }[];
+  other: { person: Person; label: string | null; fromPersonId: string; toPersonId: string }[];
   t: TranslateFn;
+  /** Can edit this profile (owner or master). */
+  canEdit?: boolean;
+  /** Current user's person id — user can remove any relationship that involves their profile. */
+  currentUserPersonId?: string | null;
 };
 
-const personName = (p: Person) => `${p.firstName} ${p.middleName ? `${p.middleName} ` : ""}${p.lastName}`;
-
-export function PersonProfile({ person, age, formatDate, parents, children, siblings, spouse, other, t }: Props) {
-  const currentName = personName(person);
+export function PersonProfile({ person, age, formatDate, parents, children, siblings, spouse, other, t, canEdit, currentUserPersonId }: Props) {
+  const currentName = formatPersonName(person);
+  const canRemove = (relatedPersonId: string) => !!canEdit || (!!currentUserPersonId && relatedPersonId === currentUserPersonId);
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold">
-          {person.firstName} {person.middleName && `${person.middleName} `}{person.lastName}
+          {formatPersonName(person)}
         </h2>
         {person.tags.length > 0 && (
           <div className="mt-1 flex flex-wrap gap-1">
@@ -113,11 +118,12 @@ export function PersonProfile({ person, age, formatDate, parents, children, sibl
             {parents.length > 0 && (
               <div>
                 <dt className="text-muted-foreground font-medium mb-1">{t("profile.parents")}</dt>
-                <dd className="flex flex-wrap gap-x-2 gap-y-1">
+                <dd className="flex flex-wrap gap-x-2 gap-y-1 items-center">
                   {parents.map((p) => (
-                    <span key={p.id}>
-                      <Link href={`/people/${p.id}`} className="underline">{personName(p)}</Link>
+                    <span key={p.id} className="inline-flex items-center gap-1">
+                      <Link href={`/people/${p.id}`} className="underline">{formatPersonName(p)}</Link>
                       <span className="text-muted-foreground"> — {t("profile.parentOf")} {currentName}</span>
+                      {canRemove(p.id) && <RemoveRelationshipButton fromPersonId={p.id} toPersonId={person.id} type="PARENT" />}
                     </span>
                   ))}
                 </dd>
@@ -126,17 +132,21 @@ export function PersonProfile({ person, age, formatDate, parents, children, sibl
             {spouse && (
               <div>
                 <dt className="text-muted-foreground font-medium mb-1">{t("profile.spouse")}</dt>
-                <dd><Link href={`/people/${spouse.id}`} className="underline">{personName(spouse)}</Link></dd>
+                <dd className="inline-flex items-center gap-1">
+                  <Link href={`/people/${spouse.id}`} className="underline">{formatPersonName(spouse)}</Link>
+                  {canRemove(spouse.id) && <RemoveRelationshipButton fromPersonId={person.id} toPersonId={spouse.id} type="SPOUSE" />}
+                </dd>
               </div>
             )}
             {children.length > 0 && (
               <div>
                 <dt className="text-muted-foreground font-medium mb-1">{t("profile.children")}</dt>
-                <dd className="flex flex-wrap gap-x-2 gap-y-1">
+                <dd className="flex flex-wrap gap-x-2 gap-y-1 items-center">
                   {children.map((p) => (
-                    <span key={p.id}>
-                      <Link href={`/people/${p.id}`} className="underline">{personName(p)}</Link>
+                    <span key={p.id} className="inline-flex items-center gap-1">
+                      <Link href={`/people/${p.id}`} className="underline">{formatPersonName(p)}</Link>
                       <span className="text-muted-foreground"> — {t("profile.childOf")} {currentName}</span>
+                      {canRemove(p.id) && <RemoveRelationshipButton fromPersonId={person.id} toPersonId={p.id} type="CHILD" />}
                     </span>
                   ))}
                 </dd>
@@ -145,9 +155,12 @@ export function PersonProfile({ person, age, formatDate, parents, children, sibl
             {siblings.length > 0 && (
               <div>
                 <dt className="text-muted-foreground font-medium mb-1">{t("profile.siblings")}</dt>
-                <dd className="flex flex-wrap gap-2">
+                <dd className="flex flex-wrap gap-2 items-center">
                   {siblings.map((p) => (
-                    <Link key={p.id} href={`/people/${p.id}`} className="underline">{personName(p)}</Link>
+                    <span key={p.id} className="inline-flex items-center gap-1">
+                      <Link href={`/people/${p.id}`} className="underline">{formatPersonName(p)}</Link>
+                      {canRemove(p.id) && <RemoveRelationshipButton fromPersonId={p.id} toPersonId={person.id} type="SIBLING" />}
+                    </span>
                   ))}
                 </dd>
               </div>
@@ -155,11 +168,14 @@ export function PersonProfile({ person, age, formatDate, parents, children, sibl
             {other.length > 0 && (
               <div>
                 <dt className="text-muted-foreground font-medium mb-1">{t("profile.other")}</dt>
-                <dd className="flex flex-wrap gap-2">
-                  {other.map(({ person: p, label }) => (
-                    <Link key={p.id} href={`/people/${p.id}`} className="underline">
-                      {personName(p)}{label ? ` (${label})` : ""}
-                    </Link>
+                <dd className="flex flex-wrap gap-2 items-center">
+                  {other.map(({ person: p, label, fromPersonId, toPersonId }) => (
+                    <span key={p.id} className="inline-flex items-center gap-1">
+                      <Link href={`/people/${p.id}`} className="underline">
+                        {formatPersonName(p)}{label ? ` (${label})` : ""}
+                      </Link>
+                      {canRemove(p.id) && <RemoveRelationshipButton fromPersonId={fromPersonId} toPersonId={toPersonId} type="OTHER" />}
+                    </span>
                   ))}
                 </dd>
               </div>

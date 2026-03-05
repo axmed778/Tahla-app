@@ -11,7 +11,9 @@ export async function getFeed(limit = 50) {
     take: limit,
     include: {
       author: { select: { id: true, firstName: true, lastName: true } },
-      relatedPerson: { select: { id: true, firstName: true, lastName: true } },
+      relatedPeople: {
+        include: { person: { select: { id: true, firstName: true, middleName: true, lastName: true } } },
+      },
     },
   });
   return posts;
@@ -22,17 +24,27 @@ export async function createPost(formData: FormData) {
   if (!session) return { error: "Not logged in" };
   const type = (formData.get("type") ?? "").toString();
   const content = (formData.get("content") ?? "").toString().trim();
-  const relatedPersonId = (formData.get("relatedPersonId") ?? "").toString() || null;
+  const relatedPersonIdsRaw = formData.get("relatedPersonIds");
+  const relatedPersonIds = Array.isArray(relatedPersonIdsRaw)
+    ? (relatedPersonIdsRaw as string[]).filter(Boolean)
+    : relatedPersonIdsRaw
+      ? (relatedPersonIdsRaw.toString().split(",").map((s) => s.trim()).filter(Boolean))
+      : [];
   if (!POST_TYPES.includes(type as (typeof POST_TYPES)[number])) return { error: "Invalid type" };
   if (!content) return { error: "Content is required" };
-  await prisma.post.create({
+  const post = await prisma.post.create({
     data: {
       type,
       content,
       authorId: session.userId,
-      relatedPersonId: relatedPersonId || undefined,
     },
   });
+  if (relatedPersonIds.length > 0) {
+    await prisma.postRelatedPerson.createMany({
+      data: relatedPersonIds.map((personId) => ({ postId: post.id, personId })),
+      skipDuplicates: true,
+    });
+  }
   revalidatePath("/feed");
   return { success: true };
 }

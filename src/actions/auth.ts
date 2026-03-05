@@ -2,31 +2,31 @@
 
 import { prisma } from "@/lib/db";
 import { setSession, clearSession, getSession } from "@/lib/auth";
-import { loginSchema, registerSchema, changePasswordSchema } from "@/lib/validations";
+import { loginSchema, registerSchema, changePasswordSchema, setPasswordByMasterSchema } from "@/lib/validations";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 
 export async function register(formData: FormData) {
   const parsed = registerSchema.safeParse({
+    email: (formData.get("email") ?? "").toString().trim().toLowerCase(),
     firstName: (formData.get("firstName") ?? "").toString().trim(),
     lastName: (formData.get("lastName") ?? "").toString().trim(),
     password: formData.get("password") ?? "",
   });
   if (!parsed.success) {
     const flat = parsed.error.flatten().fieldErrors;
-    return { error: flat.firstName?.[0] ?? flat.lastName?.[0] ?? flat.password?.[0] ?? "Invalid input" };
+    return { error: flat.email?.[0] ?? flat.firstName?.[0] ?? flat.lastName?.[0] ?? flat.password?.[0] ?? "Invalid input" };
   }
-  const existing = await prisma.user.findUnique({
-    where: {
-      firstName_lastName: { firstName: parsed.data.firstName, lastName: parsed.data.lastName },
-    },
+  const existingByEmail = await prisma.user.findUnique({
+    where: { email: parsed.data.email },
   });
-  if (existing) return { error: "Someone with this name is already registered." };
+  if (existingByEmail) return { error: "This email is already registered." };
 
   const isFirst = (await prisma.user.count()) === 0;
   const passwordHash = await bcrypt.hash(parsed.data.password, 10);
   const user = await prisma.user.create({
     data: {
+      email: parsed.data.email,
       firstName: parsed.data.firstName,
       lastName: parsed.data.lastName,
       passwordHash,
@@ -39,25 +39,24 @@ export async function register(formData: FormData) {
 
 export async function login(formData: FormData) {
   const parsed = loginSchema.safeParse({
-    firstName: (formData.get("firstName") ?? "").toString().trim(),
-    lastName: (formData.get("lastName") ?? "").toString().trim(),
+    email: (formData.get("email") ?? "").toString().trim().toLowerCase(),
     password: formData.get("password") ?? "",
   });
   if (!parsed.success) {
     const flat = parsed.error.flatten().fieldErrors;
-    return { error: flat.firstName?.[0] ?? flat.lastName?.[0] ?? flat.password?.[0] ?? "Invalid input" };
+    return { error: flat.email?.[0] ?? flat.password?.[0] ?? "Invalid input" };
   }
 
   const user = await prisma.user.findUnique({
-    where: {
-      firstName_lastName: { firstName: parsed.data.firstName, lastName: parsed.data.lastName },
-    },
+    where: { email: parsed.data.email },
+    select: { id: true, isMaster: true, passwordHash: true, person: { select: { id: true } } },
   });
-  if (!user) return { error: "No account with this name." };
+  if (!user) return { error: "No account with this email." };
   const ok = await bcrypt.compare(parsed.data.password, user.passwordHash);
   if (!ok) return { error: "Wrong password." };
 
   await setSession(user.id, user.isMaster);
+  if (!user.person?.id) redirect("/profile/complete");
   redirect("/");
 }
 
@@ -112,6 +111,25 @@ export async function changePassword(formData: FormData) {
   return { success: true };
 }
 
+/** App owner only: set a new password for another user (no current password required). */
+export async function setUserPasswordAsMaster(formData: FormData) {
+  const session = await getSession();
+  if (!session?.isMaster) return { error: "Only the app owner can change other users' passwords." };
+  const parsed = setPasswordByMasterSchema.safeParse({
+    userId: (formData.get("userId") ?? "").toString(),
+    newPassword: formData.get("newPassword") ?? "",
+  });
+  if (!parsed.success) {
+    const flat = parsed.error.flatten().fieldErrors;
+    return { error: flat.userId?.[0] ?? flat.newPassword?.[0] ?? "Invalid input" };
+  }
+  const target = await prisma.user.findUnique({ where: { id: parsed.data.userId } });
+  if (!target) return { error: "User not found" };
+  const passwordHash = await bcrypt.hash(parsed.data.newPassword, 10);
+  await prisma.user.update({ where: { id: parsed.data.userId }, data: { passwordHash } });
+  return { success: true };
+}
+
 // Account changes (add/delete user, change password) are allowed only for:
 // - The user themselves (for their own account: change password, delete self)
 // - The app owner (isMaster) for any account: add user, delete any user except self
@@ -120,23 +138,23 @@ export async function addUser(formData: FormData) {
   const session = await getSession();
   if (!session?.isMaster) return { error: "Only the app owner can add users." };
   const parsed = registerSchema.safeParse({
+    email: (formData.get("email") ?? "").toString().trim().toLowerCase(),
     firstName: (formData.get("firstName") ?? "").toString().trim(),
     lastName: (formData.get("lastName") ?? "").toString().trim(),
     password: formData.get("password") ?? "",
   });
   if (!parsed.success) {
     const flat = parsed.error.flatten().fieldErrors;
-    return { error: flat.firstName?.[0] ?? flat.lastName?.[0] ?? flat.password?.[0] ?? "Invalid input" };
+    return { error: flat.email?.[0] ?? flat.firstName?.[0] ?? flat.lastName?.[0] ?? flat.password?.[0] ?? "Invalid input" };
   }
   const existing = await prisma.user.findUnique({
-    where: {
-      firstName_lastName: { firstName: parsed.data.firstName, lastName: parsed.data.lastName },
-    },
+    where: { email: parsed.data.email },
   });
-  if (existing) return { error: "Someone with this name is already registered." };
+  if (existing) return { error: "This email is already registered." };
   const passwordHash = await bcrypt.hash(parsed.data.password, 10);
   await prisma.user.create({
     data: {
+      email: parsed.data.email,
       firstName: parsed.data.firstName,
       lastName: parsed.data.lastName,
       passwordHash,

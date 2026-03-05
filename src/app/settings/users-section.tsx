@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { deleteUser } from "@/actions/auth";
 import { getLocale, getT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
+import { MasterSetPasswordDialog } from "./master-set-password-dialog";
 
 export async function UsersSection({
   currentUserId,
@@ -14,7 +15,7 @@ export async function UsersSection({
   const [users, locale, t] = await Promise.all([
     prisma.user.findMany({
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
-      select: { id: true, firstName: true, lastName: true, isMaster: true },
+      select: { id: true, email: true, firstName: true, lastName: true, isMaster: true },
     }),
     getLocale(),
     getLocale().then((l) => getT(l)),
@@ -39,9 +40,16 @@ export async function UsersSection({
           >
             <span>
               {u.firstName} {u.lastName}
+              <span className="text-muted-foreground"> — {u.email}</span>
               {u.isMaster && ` (${t("nav.master")})`}
             </span>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {isMaster && u.id !== currentUserId && (
+                <MasterSetPasswordDialog
+                  userId={u.id}
+                  userName={`${u.firstName} ${u.lastName}`}
+                />
+              )}
               {isMaster && u.id !== currentUserId && !u.isMaster && (
                 <form action={deleteUser}>
                   <input type="hidden" name="userId" value={u.id} />

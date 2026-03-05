@@ -36,13 +36,32 @@ A fast, offline-by-default family and relatives directory. Store details (locati
    npm run db:seed
    ```
 
-4. **Run**
+4. **Reset database and create master account**
+
+   To clear all data and get a fresh DB with only the seed master user:
+
+   ```bash
+   npx prisma migrate reset --force
+   ```
+
+   This will:
+   - Drop the database
+   - Re-run all migrations
+   - Run the seed script
+
+   **Master account (after seed):**
+   - **Email:** `master@example.com`
+   - **Password:** `master123`
+
+   (You can also reset from the app: log in as master → Settings → “Reset app data”. Then register again; the first registered user becomes master.)
+
+5. **Run**
 
    ```bash
    npm run dev
    ```
 
-   Open [http://localhost:3000](http://localhost:3000). On first run you will be sent to `/lock` to set a PIN.
+   Open [http://localhost:3000](http://localhost:3000). Sign in with email and password at `/lock`. After seed, use `master@example.com` / `master123`.
 
 ## How the PIN works
 

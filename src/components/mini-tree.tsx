@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Person } from "@prisma/client";
+import { formatPersonName } from "@/lib/utils";
 
 type Props = {
   person: Person;
@@ -21,7 +22,7 @@ export function MiniTree({ person, parents, spouse, children, siblings }: Props)
               href={`/people/${p.id}`}
               className="rounded-md border bg-background px-3 py-2 text-sm hover:bg-muted"
             >
-              {p.firstName} {p.lastName}
+              {formatPersonName(p)}
             </Link>
           ))}
         </div>
@@ -32,14 +33,14 @@ export function MiniTree({ person, parents, spouse, children, siblings }: Props)
           href={`/people/${person.id}`}
           className="rounded-md border-2 border-primary bg-primary/10 px-4 py-2 font-medium text-sm"
         >
-          {person.firstName} {person.lastName}
+          {formatPersonName(person)}
         </Link>
         {spouse && (
           <Link
             href={`/people/${spouse.id}`}
             className="rounded-md border bg-background px-3 py-2 text-sm hover:bg-muted"
           >
-            {spouse.firstName} {spouse.lastName}
+            {formatPersonName(spouse)}
           </Link>
         )}
       </div>
@@ -52,7 +53,7 @@ export function MiniTree({ person, parents, spouse, children, siblings }: Props)
               href={`/people/${p.id}`}
               className="rounded-md border bg-background px-3 py-2 text-sm hover:bg-muted"
             >
-              {p.firstName} {p.lastName}
+              {formatPersonName(p)}
             </Link>
           ))}
         </div>
@@ -68,7 +69,7 @@ export function MiniTree({ person, parents, spouse, children, siblings }: Props)
                 href={`/people/${p.id}`}
                 className="rounded-md border bg-background px-2 py-1 text-sm hover:bg-muted"
               >
-                {p.firstName} {p.lastName}
+                {formatPersonName(p)}
               </Link>
             ))}
           </div>

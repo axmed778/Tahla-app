@@ -12,7 +12,7 @@ export default async function FeedPage() {
     getFeed(),
     prisma.person.findMany({
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
-      select: { id: true, firstName: true, lastName: true },
+      select: { id: true, firstName: true, middleName: true, lastName: true },
     }),
   ]);
   const locale = await getLocale();

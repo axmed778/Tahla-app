@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 import { relationshipSchema } from "@/lib/validations";
 import { revalidatePath } from "next/cache";
 type RelationshipType = "PARENT" | "CHILD" | "SIBLING" | "SPOUSE" | "OTHER";
@@ -36,10 +37,13 @@ export async function addRelationship(fromPersonId: string, data: { toPersonId: 
     });
   };
 
-  if (type === "SIBLING" || type === "SPOUSE" || type === "OTHER") {
+  // PARENT/CHILD: one direction only for the inverse (same pair, inverse type).
+  // (A parent of B) → (A,B,PARENT) + (A,B,CHILD) so B sees parent A and A sees child B.
+  if (type === "PARENT" || type === "CHILD") {
     await createPair(fromPersonId, toPersonId, type, label ?? null);
-    await createPair(toPersonId, fromPersonId, inverse, label ?? null);
+    await createPair(fromPersonId, toPersonId, inverse, label ?? null);
   } else {
+    // SIBLING / SPOUSE / OTHER: symmetric, so swap from↔to and create inverse.
     await createPair(fromPersonId, toPersonId, type, label ?? null);
     await createPair(toPersonId, fromPersonId, inverse, label ?? null);
   }
@@ -50,15 +54,37 @@ export async function addRelationship(fromPersonId: string, data: { toPersonId: 
 }
 
 export async function removeRelationship(fromPersonId: string, toPersonId: string, type: RelationshipType) {
+  const session = await getSession();
+  if (!session) return { error: "Not logged in" };
+  const [fromPerson, toPerson] = await Promise.all([
+    prisma.person.findUnique({ where: { id: fromPersonId }, select: { userId: true } }),
+    prisma.person.findUnique({ where: { id: toPersonId }, select: { userId: true } }),
+  ]);
+  if (!fromPerson || !toPerson) return { error: "Person not found" };
+  const canEditFrom = fromPerson.userId === session.userId;
+  const canEditTo = toPerson.userId === session.userId;
+  if (!session.isMaster && !canEditFrom && !canEditTo) return { error: "You can only remove relationships for your own profile" };
+
   const inverse = INVERSES[type];
-  await prisma.relationship.deleteMany({
-    where: {
-      OR: [
-        { fromPersonId, toPersonId, type },
-        { fromPersonId: toPersonId, toPersonId: fromPersonId, type: inverse },
-      ],
-    },
-  });
+  if (type === "PARENT" || type === "CHILD") {
+    // Same pair, two types
+    await prisma.relationship.deleteMany({
+      where: {
+        fromPersonId,
+        toPersonId,
+        type: { in: [type, inverse] },
+      },
+    });
+  } else {
+    await prisma.relationship.deleteMany({
+      where: {
+        OR: [
+          { fromPersonId, toPersonId, type },
+          { fromPersonId: toPersonId, toPersonId: fromPersonId, type: inverse },
+        ],
+      },
+    });
+  }
   revalidatePath(`/people/${fromPersonId}`);
   revalidatePath(`/people/${toPersonId}`);
   return { success: true };

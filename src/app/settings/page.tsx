@@ -25,6 +25,21 @@ export default async function SettingsPage() {
         <h2 className="text-xl font-semibold mb-6">{t("settings.title")}</h2>
 
         <section className="mb-8">
+          <h3 className="font-medium mb-3">{user.personId ? t("settings.myProfile") : t("settings.completeProfile")}</h3>
+          <p className="text-sm text-muted-foreground mb-2">
+            {user.personId
+              ? t("settings.myProfileDesc")
+              : t("settings.completeProfileDesc")}
+          </p>
+          <Link
+            href={user.personId ? `/people/${user.personId}/edit` : "/profile/complete"}
+            className="text-sm font-medium text-primary hover:underline"
+          >
+            {user.personId ? t("common.edit") : t("profileComplete.title")}
+          </Link>
+        </section>
+
+        <section className="mb-8">
           <h3 className="font-medium mb-3">{t("settings.changePassword")}</h3>
           <ChangePasswordForm />
         </section>

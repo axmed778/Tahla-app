@@ -11,6 +11,8 @@
   },
   "lock": {
     "title": "Sign in to your family account",
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
     "firstName": "First name",
     "lastName": "Last name",
     "password": "Password",
@@ -20,7 +22,7 @@
   },
   "register": {
     "title": "Create account",
-    "subtitle": "Register with your name and password",
+    "subtitle": "Register with your email, name and password",
     "passwordMin": "Password (min 6 characters)",
     "createAccount": "Create account",
     "hasAccount": "Already have an account?",
@@ -33,6 +35,9 @@
     "content": "Content",
     "contentPlaceholder": "What's the news?",
     "relatedPerson": "Related person (optional)",
+    "relatedPeople": "Related people (optional)",
+    "addPerson": "Add person",
+    "noMorePeople": "All people added",
     "none": "None",
     "post": "Post",
     "noPosts": "No posts yet. Share an update above.",
@@ -56,6 +61,10 @@
   "settings": {
     "title": "Settings",
     "back": "Back",
+    "myProfile": "My profile",
+    "myProfileDesc": "Edit your profile in the family directory.",
+    "completeProfile": "Complete your profile",
+    "completeProfileDesc": "Add your details to appear in the directory and let others connect with you.",
     "changePassword": "Change password",
     "currentPassword": "Current password",
     "newPassword": "New password (min 6 characters)",
@@ -71,12 +80,35 @@
     "edit": "Edit",
     "viewFullTree": "View full tree",
     "backToDirectory": "Back to directory",
-    "language": "Language"
+    "language": "Language",
+    "menu": "Menu"
   },
   "tree": {
     "title": "Family tree",
     "privacyNotice": "Privacy: only names are shown. You are viewing as a friend.",
-    "siblings": "Siblings"
+    "siblings": "Siblings",
+    "parents": "Parents",
+    "children": "Children",
+    "spouse": "Spouse"
+  },
+  "addRelationship": {
+    "title": "Add relationship",
+    "description": "Link this person to another. Relationship will be stored in both directions where applicable.",
+    "person": "Person",
+    "type": "Type",
+    "selectPerson": "Select person",
+    "labelOptional": "Label (optional, e.g. uncle, aunt)",
+    "labelPlaceholder": "e.g. uncle",
+    "add": "Add",
+    "parent": "Parent",
+    "child": "Child",
+    "sibling": "Sibling",
+    "spouse": "Spouse",
+    "other": "Other"
+  },
+  "relationship": {
+    "remove": "Remove",
+    "removing": "Removing…"
   },
   "people": {
     "addPerson": "Add person",
@@ -124,7 +156,7 @@
   "form": {
     "identity": "Identity",
     "firstName": "First name",
-    "middleName": "Middle name",
+    "middleName": "Patronymic (middle name)",
     "lastName": "Last name",
     "gender": "Gender",
     "maritalStatus": "Marital status",
@@ -167,6 +199,8 @@
     "onlyOwnerCanManage": "Only you (app owner) can add or remove user accounts. No one else can change other users' accounts.",
     "onlyOwnerCanManageOther": "Only the app owner can add or remove users. You can only change or delete your own account.",
     "onlyOwnerCanAddWhenLoggedIn": "Only the app owner can add other users from here. You can manage your own account in Settings.",
+    "setPassword": "Set password",
+    "setPasswordFor": "Set password for",
     "deleteUser": "Delete",
     "deleteMyAccount": "Delete my account",
     "defaultTreeRoot": "Default family tree",

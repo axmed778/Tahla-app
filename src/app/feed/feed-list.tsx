@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { useTranslations } from "@/components/i18n-provider";
+import { formatPersonName } from "@/lib/utils";
+
+type RelatedPerson = { id: string; firstName: string; middleName: string | null; lastName: string };
 
 type Post = {
   id: string;
@@ -9,7 +12,7 @@ type Post = {
   content: string;
   createdAt: Date;
   author: { id: string; firstName: string; lastName: string };
-  relatedPerson: { id: string; firstName: string; lastName: string } | null;
+  relatedPeople: { person: RelatedPerson }[];
 };
 
 export function FeedList({ posts }: { posts: Post[] }) {
@@ -29,12 +32,17 @@ export function FeedList({ posts }: { posts: Post[] }) {
             </span>
             <span>·</span>
             <span>{t(`feed.types.${post.type}`)}</span>
-            {post.relatedPerson && (
+            {post.relatedPeople.length > 0 && (
               <>
                 <span>·</span>
-                <Link href={`/people/${post.relatedPerson.id}`} className="hover:underline">
-                  {post.relatedPerson.firstName} {post.relatedPerson.lastName}
-                </Link>
+                {post.relatedPeople.map(({ person }, i) => (
+                  <span key={person.id}>
+                    {i > 0 && ", "}
+                    <Link href={`/people/${person.id}`} className="hover:underline">
+                      {formatPersonName(person)}
+                    </Link>
+                  </span>
+                ))}
               </>
             )}
           </div>

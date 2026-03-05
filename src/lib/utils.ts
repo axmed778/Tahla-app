@@ -18,3 +18,13 @@ export function formatDate(d: Date | null): string {
   if (!d) return "";
   return new Date(d).toLocaleDateString("en-CA", { year: "numeric", month: "short", day: "numeric" });
 }
+
+/** Format full name with optional patronymic (отчество): "FirstName MiddleName LastName" */
+export function formatPersonName(p: {
+  firstName: string;
+  middleName?: string | null;
+  lastName: string;
+}): string {
+  const mid = p.middleName?.trim();
+  return mid ? `${p.firstName} ${mid} ${p.lastName}` : `${p.firstName} ${p.lastName}`;
+}
