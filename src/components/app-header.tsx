@@ -9,14 +9,16 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type User = { id: string; firstName: string; lastName: string; isMaster: boolean };
+type User = { id: string; firstName: string; lastName: string; isMaster: boolean; personId: string | null };
 
 const NAV_LINKS = [
   { href: "/", key: "nav.directory" },
   { href: "/feed", key: "nav.feed" },
+  { href: "/groups", key: "nav.groups" },
   { href: "/events", key: "nav.events" },
   { href: "/tree", key: "nav.familyTree" },
   { href: "/friends", key: "nav.friends" },
+  { href: "/messages", key: "nav.messages" },
   { href: "/people/new", key: "nav.addPerson" },
   { href: "/settings", key: "nav.settings" },
 ] as const;
@@ -41,16 +43,31 @@ export function AppHeader({ user }: { user: User | null }) {
           </Button>
 
           <h1 className="min-w-0 flex-1 text-center text-lg font-semibold">
-            {t("appName")}
+            <Link href="/feed" className="hover:underline">
+              {t("appName")}
+            </Link>
           </h1>
 
           <div className="flex shrink-0 items-center gap-2">
             <LanguageSwitcher />
             {user && (
-              <span className="max-w-[120px] truncate text-sm text-muted-foreground sm:max-w-none">
-                {user.firstName} {user.lastName}
-                {user.isMaster && ` (${t("nav.master")})`}
-              </span>
+              user.personId ? (
+                <Link
+                  href={`/people/${user.personId}`}
+                  className="max-w-[120px] truncate text-sm font-medium text-foreground hover:underline sm:max-w-none"
+                >
+                  {user.firstName} {user.lastName}
+                  {user.isMaster && ` (${t("nav.master")})`}
+                </Link>
+              ) : (
+                <Link
+                  href="/profile/complete"
+                  className="max-w-[120px] truncate text-sm font-medium text-foreground hover:underline sm:max-w-none"
+                >
+                  {user.firstName} {user.lastName}
+                  {user.isMaster && ` (${t("nav.master")})`}
+                </Link>
+              )
             )}
             <form action={logout}>
               <Button type="submit" variant="ghost" size="sm">

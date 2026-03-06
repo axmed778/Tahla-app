@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/actions/auth";
 import { AppHeader } from "@/components/app-header";
 import { PersonForm } from "@/components/person-form";
 import { DeletePersonButton } from "./delete-person-button";
+import { ProfilePhotoSection } from "./profile-photo-section";
 
 export default async function EditPersonPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -19,6 +20,7 @@ export default async function EditPersonPage({ params }: { params: Promise<{ id:
 
   const tags = await prisma.tag.findMany({ orderBy: { name: "asc" } });
 
+  const visibility = (person as { profileVisibility?: string }).profileVisibility ?? "ALL";
   const initial = {
     firstName: person.firstName,
     lastName: person.lastName,
@@ -33,6 +35,7 @@ export default async function EditPersonPage({ params }: { params: Promise<{ id:
     workplace: person.workplace ?? "",
     maritalStatus: person.maritalStatus,
     notes: person.notes ?? "",
+    profileVisibility: visibility as "ALL" | "FRIENDS" | "FIRST_GEN",
     phones: person.phones.map((p) => ({ id: p.id, label: p.label ?? "", number: p.number })),
     emails: person.emails.map((e) => ({ id: e.id, label: e.label ?? "", email: e.email })),
     tagIds: person.tags.map((t) => t.tagId),
@@ -46,7 +49,10 @@ export default async function EditPersonPage({ params }: { params: Promise<{ id:
           <Link href={`/people/${id}`} className="text-sm text-muted-foreground hover:text-foreground">← Back to profile</Link>
         </div>
         <h2 className="text-xl font-semibold mb-6">Edit person</h2>
-        <PersonForm personId={id} initial={initial} tags={tags} />
+        <ProfilePhotoSection personId={id} photoUrl={(person as { photoUrl?: string | null }).photoUrl ?? null} />
+        <div className="mt-6">
+          <PersonForm personId={id} initial={initial} tags={tags} />
+        </div>
         <div className="mt-8 pt-6 border-t">
           <DeletePersonButton personId={id} />
         </div>

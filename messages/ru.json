@@ -3,9 +3,11 @@
   "nav": {
     "directory": "Каталог",
     "feed": "Лента",
+    "groups": "Группы",
     "events": "События",
     "familyTree": "Семейное древо",
     "friends": "Друзья",
+    "messages": "Сообщения",
     "addPerson": "Добавить человека",
     "settings": "Настройки",
     "signOut": "Выйти",
@@ -43,6 +45,13 @@
     "none": "Нет",
     "post": "Опубликовать",
     "noPosts": "Пока нет записей. Опубликуйте выше.",
+    "generalFeed": "Общая лента",
+    "postToGroup": "Опубликовать в группу",
+    "photos": "Фото",
+    "photosSelected": "фото выбрано",
+    "comments": "Комментарии",
+    "commentPlaceholder": "Написать комментарий…",
+    "addComment": "Отправить",
     "types": {
       "MARRIAGE": "Свадьба",
       "NEW_WORKPLACE": "Новое место работы",
@@ -57,6 +66,13 @@
     "yourFriends": "Ваши друзья",
     "noFriends": "Пока нет друзей. Добавьте выше.",
     "addFriend": "Добавить в друзья",
+    "sendRequest": "Отправить заявку",
+    "incomingRequests": "Входящие заявки",
+    "incomingRequestsHint": "Вам отправили заявку в друзья. Примите или отклоните.",
+    "accept": "Принять",
+    "decline": "Отклонить",
+    "sentRequests": "Отправленные заявки",
+    "cancelRequest": "Отменить заявку",
     "remove": "Удалить",
     "noUsersToAdd": "Нет других пользователей или все уже в друзьях."
   },
@@ -143,7 +159,18 @@
     "parentOf": "родитель(ница) для",
     "childOf": "ребёнок для",
     "notes": "Заметки",
-    "miniTreeView": "Мини-древо"
+    "miniTreeView": "Мини-древо",
+    "visibility": "Видимость профиля",
+    "visibilityLabel": "Кто видит контакты, адрес и заметки",
+    "visibilityAll": "Для всех",
+    "visibilityFriends": "Только для друзей",
+    "visibilityFirstGen": "Только для семьи 1-го поколения",
+    "visibilityHint": "Родители, дети, братья/сёстры и супруг(а) считаются семьёй 1-го поколения.",
+    "photo": "Фото профиля",
+    "uploadPhoto": "Загрузить фото",
+    "changePhoto": "Изменить фото",
+    "removePhoto": "Удалить фото",
+    "photoHint": "JPEG, PNG или WebP, не более 5 МБ."
   },
   "people": {
     "addPerson": "Добавить человека",
@@ -216,8 +243,36 @@
     "place": "Место",
     "invitees": "Список приглашённых",
     "inviteesVisible": "Видно приглашённым",
+    "inviteesSearch": "Поиск по имени или фамилии…",
+    "inviteesEmpty": "Нет пользователей для приглашения.",
+    "inviteesNoResults": "Никого не найдено.",
+    "sortBy": "Сортировка",
+    "sortByName": "По имени",
+    "sortByCity": "По городу",
+    "sortByAge": "По возрасту",
+    "sortByGender": "По полу",
     "create": "Создать событие",
     "noEvents": "Пока нет событий.",
-    "participants": "Участники"
+    "participants": "Участники",
+    "photo": "Фото события"
+  },
+  "messages": {
+    "title": "Сообщения",
+    "startWith": "Начать диалог с…",
+    "start": "Написать",
+    "noConversations": "Нет диалогов.",
+    "back": "К списку",
+    "writeMessage": "Сообщение…",
+    "send": "Отправить"
+  },
+  "groups": {
+    "title": "Группы",
+    "subtitle": "Ваши группы. В ленте можно переключаться между общей лентой и лентой группы.",
+    "create": "Создать группу",
+    "noGroups": "Вы пока не в группах.",
+    "members": "участников",
+    "name": "Название",
+    "description": "Описание",
+    "back": "К списку групп"
   }
 }

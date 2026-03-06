@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { addFriend } from "@/actions/friends";
+import { sendFriendRequest } from "@/actions/friends";
 import { useTranslations } from "@/components/i18n-provider";
 
 type User = { id: string; firstName: string; lastName: string };
@@ -29,10 +29,10 @@ export function AddFriendForm({ users }: { users: User[] }) {
           <span>
             {u.firstName} {u.lastName}
           </span>
-          <form action={addFriend}>
+          <form action={sendFriendRequest}>
             <input type="hidden" name="userId" value={u.id} />
             <Button type="submit" size="sm" disabled={loading}>
-              {t("friends.addFriend")}
+              {t("friends.sendRequest")}
             </Button>
           </form>
         </li>

@@ -24,6 +24,12 @@ export default async function EventPage({ params }: { params: Promise<{ id: stri
       <main className="container mx-auto max-w-xl px-4 py-6">
         <Link href="/events" className="text-sm text-muted-foreground hover:text-foreground">← {t("events.title")}</Link>
         <div className="mt-6 rounded-lg border p-6">
+          {(event as { imageUrl?: string | null }).imageUrl && (
+            <div className="relative w-full aspect-video rounded-md overflow-hidden bg-muted mb-4">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={(event as { imageUrl: string }).imageUrl} alt="" className="w-full h-full object-cover" />
+            </div>
+          )}
           <h2 className="text-xl font-semibold">{event.name}</h2>
           <div className="text-sm text-muted-foreground mt-2">
             {new Date(event.date).toLocaleString()}

@@ -1,15 +1,19 @@
 import { getCurrentUser } from "@/actions/auth";
 import { AppHeader } from "@/components/app-header";
-import { getFriends, getUsersNotFriends } from "@/actions/friends";
+import { getFriends, getUsersNotFriends, getIncomingFriendRequests, getSentFriendRequests } from "@/actions/friends";
 import { getLocale, getT } from "@/lib/i18n";
 import { FriendsList } from "./friends-list";
 import { AddFriendForm } from "./add-friend-form";
+import { IncomingRequests } from "./incoming-requests";
+import { SentRequests } from "./sent-requests";
 
 export default async function FriendsPage() {
-  const [user, friends, notFriends, locale, t] = await Promise.all([
+  const [user, friends, notFriends, incoming, sent, locale, t] = await Promise.all([
     getCurrentUser(),
     getFriends(),
     getUsersNotFriends(),
+    getIncomingFriendRequests(),
+    getSentFriendRequests(),
     getLocale(),
     getLocale().then((l) => getT(l)),
   ]);
@@ -23,8 +27,13 @@ export default async function FriendsPage() {
         <p className="text-muted-foreground text-sm mb-6">
           {t("friends.subtitle")}
         </p>
-        <AddFriendForm users={notFriends} />
-        <div className="mt-8">
+        <IncomingRequests requests={incoming} />
+        <SentRequests requests={sent} />
+        <div className="mb-6">
+          <h3 className="font-medium mb-3">{t("friends.addFriend")}</h3>
+          <AddFriendForm users={notFriends} />
+        </div>
+        <div>
           <h3 className="font-medium mb-3">{t("friends.yourFriends")}</h3>
           <FriendsList friends={friends} />
         </div>

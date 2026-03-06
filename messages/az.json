@@ -3,9 +3,11 @@
   "nav": {
     "directory": "Kataloq",
     "feed": "Xəbərlər",
+    "groups": "Qruplar",
     "events": "Tədbirlər",
     "familyTree": "Ailə ağacı",
     "friends": "Dostlar",
+    "messages": "Mesajlar",
     "addPerson": "Şəxs əlavə et",
     "settings": "Parametrlər",
     "signOut": "Çıxış",
@@ -43,6 +45,13 @@
     "none": "Yoxdur",
     "post": "Paylaş",
     "noPosts": "Hələ paylaşım yoxdur. Yuxarıdan paylaşın.",
+    "generalFeed": "Ümumi lent",
+    "postToGroup": "Qrupa paylaş",
+    "photos": "Foto",
+    "photosSelected": "foto seçilib",
+    "comments": "Şərhlər",
+    "commentPlaceholder": "Şərh yaz…",
+    "addComment": "Göndər",
     "types": {
       "MARRIAGE": "Evlilik",
       "NEW_WORKPLACE": "Yeni iş yeri",
@@ -57,6 +66,13 @@
     "yourFriends": "Dostlarınız",
     "noFriends": "Hələ dost yoxdur. Yuxarıdan əlavə edin.",
     "addFriend": "Dost əlavə et",
+    "sendRequest": "Sorğu göndər",
+    "incomingRequests": "Gələn sorğular",
+    "incomingRequestsHint": "Sizi dost kimi əlavə etmək istəyirlər. Qəbul edin və ya rədd edin.",
+    "accept": "Qəbul et",
+    "decline": "Rədd et",
+    "sentRequests": "Göndərilən sorğular",
+    "cancelRequest": "Sorğunu ləğv et",
     "remove": "Sil",
     "noUsersToAdd": "Əlavə ediləcək başqa istifadəçi yoxdur və ya hamı artıq dostunuzdur."
   },
@@ -143,7 +159,18 @@
     "parentOf": "valideyni",
     "childOf": "uşağı",
     "notes": "Qeydlər",
-    "miniTreeView": "Mini ağac görünüşü"
+    "miniTreeView": "Mini ağac görünüşü",
+    "visibility": "Profil görünürlüyü",
+    "visibilityLabel": "Əlaqə, ünvan və qeydləri kim görə bilər",
+    "visibilityAll": "Hamı üçün",
+    "visibilityFriends": "Yalnız dostlar",
+    "visibilityFirstGen": "Yalnız 1-ci nəsil ailə",
+    "visibilityHint": "Valideynlər, uşaqlar, qardaş/bacı və həyat yoldaşı 1-ci nəsil ailə sayılır.",
+    "photo": "Profil foto",
+    "uploadPhoto": "Foto yüklə",
+    "changePhoto": "Foto dəyiş",
+    "removePhoto": "Fotonu sil",
+    "photoHint": "JPEG, PNG və ya WebP, maksimum 5 MB."
   },
   "people": {
     "addPerson": "Şəxs əlavə et",
@@ -216,8 +243,36 @@
     "place": "Yer",
     "invitees": "Dəvət siyahısı",
     "inviteesVisible": "Dəvət edilənlərə görünür",
+    "inviteesSearch": "Ada və ya soyada görə axtar…",
+    "inviteesEmpty": "Dəvət ediləcək istifadəçi yoxdur.",
+    "inviteesNoResults": "Heç nə tapılmadı.",
+    "sortBy": "Çeşidlə",
+    "sortByName": "Ada görə",
+    "sortByCity": "Şəhərə görə",
+    "sortByAge": "Yaşa görə",
+    "sortByGender": "Cinsiyyətə görə",
     "create": "Tədbir yarat",
     "noEvents": "Hələ tədbir yoxdur.",
-    "participants": "İştirakçılar"
+    "participants": "İştirakçılar",
+    "photo": "Tədbir foto"
+  },
+  "messages": {
+    "title": "Mesajlar",
+    "startWith": "Söhbətə başla…",
+    "start": "Yaz",
+    "noConversations": "Söhbət yoxdur.",
+    "back": "Siyahıya",
+    "writeMessage": "Mesaj…",
+    "send": "Göndər"
+  },
+  "groups": {
+    "title": "Qruplar",
+    "subtitle": "Qruplarınız. Lentdə ümumi və qrup lentini keçə bilərsiniz.",
+    "create": "Qrup yarat",
+    "noGroups": "Hələ heç bir qrupda deyilsiniz.",
+    "members": "üzv",
+    "name": "Ad",
+    "description": "Təsvir",
+    "back": "Qruplara qayıt"
   }
 }

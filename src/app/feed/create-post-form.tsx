@@ -18,14 +18,16 @@ import { formatPersonName } from "@/lib/utils";
 import { X } from "lucide-react";
 
 type Person = { id: string; firstName: string; middleName: string | null; lastName: string };
+type Group = { id: string; name: string };
 
-export function CreatePostForm({ people }: { people: Person[] }) {
+export function CreatePostForm({ people, groupId, groups }: { people: Person[]; groupId?: string | null; groups?: Group[] }) {
   const t = useTranslations();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [type, setType] = useState("");
   const [relatedPersonIds, setRelatedPersonIds] = useState<string[]>([]);
   const [addPersonId, setAddPersonId] = useState<string>("");
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
 
   const availableToAdd = people.filter((p) => !relatedPersonIds.includes(p.id));
 
@@ -46,6 +48,8 @@ export function CreatePostForm({ people }: { people: Person[] }) {
     const formData = new FormData(form);
     formData.set("type", type);
     formData.set("relatedPersonIds", relatedPersonIds.join(","));
+    if (groupId) formData.set("groupId", groupId);
+    photoFiles.forEach((f) => formData.append("photos", f));
     const result = await createPost(formData);
     setLoading(false);
     if (result?.error) setError(result.error);
@@ -53,6 +57,7 @@ export function CreatePostForm({ people }: { people: Person[] }) {
       form.reset();
       setType("");
       setRelatedPersonIds([]);
+      setPhotoFiles([]);
     }
   }
 
@@ -73,6 +78,17 @@ export function CreatePostForm({ people }: { people: Person[] }) {
           </SelectContent>
         </Select>
       </div>
+      {groups && groups.length > 0 && !groupId && (
+        <div className="space-y-2">
+          <Label>{t("feed.postToGroup")}</Label>
+          <select name="groupId" className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+            <option value="">{t("feed.generalFeed")}</option>
+            {groups.map((g) => (
+              <option key={g.id} value={g.id}>{g.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
       <div className="space-y-2">
         <Label htmlFor="content">{t("feed.content")}</Label>
         <Input
@@ -81,6 +97,19 @@ export function CreatePostForm({ people }: { people: Person[] }) {
           placeholder={t("feed.contentPlaceholder")}
           required
         />
+      </div>
+      <div className="space-y-2">
+        <Label>{t("feed.photos")}</Label>
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          multiple
+          className="text-sm"
+          onChange={(e) => setPhotoFiles(Array.from(e.target.files ?? []))}
+        />
+        {photoFiles.length > 0 && (
+          <p className="text-xs text-muted-foreground">{photoFiles.length} {t("feed.photosSelected")}</p>
+        )}
       </div>
       <div className="space-y-2">
         <Label>{t("feed.relatedPeople")}</Label>

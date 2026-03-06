@@ -42,6 +42,31 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
 
   const canEdit = !!user && (person.userId === user.id || user.isMaster);
 
+  const visibility = (person as { profileVisibility?: string }).profileVisibility ?? "ALL";
+  let showFullProfile = canEdit;
+  if (!showFullProfile && user && person.userId) {
+    if (visibility === "ALL") showFullProfile = true;
+    else if (visibility === "FRIENDS") {
+      const friendship = await prisma.friendship.findFirst({
+        where: {
+          OR: [
+            { userAId: user.id, userBId: person.userId },
+            { userAId: person.userId, userBId: user.id },
+          ],
+        },
+      });
+      showFullProfile = !!friendship;
+    } else if (visibility === "FIRST_GEN" && user.personId) {
+      const firstGenIds = new Set([
+        ...parents.map((p) => p.id),
+        ...children.map((p) => p.id),
+        ...siblings.map((p) => p.id),
+        ...(spouse ? [spouse.id] : []),
+      ]);
+      showFullProfile = firstGenIds.has(user.personId);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader user={user} />
@@ -65,6 +90,10 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           t={t}
           canEdit={canEdit}
           currentUserPersonId={user?.personId ?? null}
+          showContact={showFullProfile}
+          showLocation={showFullProfile}
+          showWork={showFullProfile}
+          showNotes={showFullProfile}
         />
         <section className="mt-6">
           <AddRelationshipForm fromPersonId={id} otherPeople={allPeople} />

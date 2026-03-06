@@ -73,6 +73,7 @@ export const personFormSchema = z.object({
   workplace: z.string().optional(),
   maritalStatus: z.enum(["SINGLE", "MARRIED", "DIVORCED", "WIDOWED", "OTHER"]),
   notes: z.string().optional(),
+  profileVisibility: z.enum(["ALL", "FRIENDS", "FIRST_GEN"]).optional(),
   phones: z.array(phoneSchema).default([]),
   emails: z.array(personEmailSchema).default([]),
   tagIds: z.array(z.string().uuid()).default([]),

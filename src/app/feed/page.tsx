@@ -5,15 +5,24 @@ import { prisma } from "@/lib/db";
 import { getLocale, getT } from "@/lib/i18n";
 import { FeedList } from "./feed-list";
 import { CreatePostForm } from "./create-post-form";
+import { FeedTabs } from "./feed-tabs";
 
-export default async function FeedPage() {
-  const [user, posts, people] = await Promise.all([
+type SearchParams = Promise<{ group?: string }>;
+
+export default async function FeedPage({ searchParams }: { searchParams: SearchParams }) {
+  const params = await searchParams;
+  const groupId = params.group?.trim() || null;
+  const [user, posts, people, userGroups] = await Promise.all([
     getCurrentUser(),
-    getFeed(),
+    getFeed(50, groupId),
     prisma.person.findMany({
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
       select: { id: true, firstName: true, middleName: true, lastName: true },
     }),
+    user ? prisma.groupMember.findMany({
+      where: { userId: user.id },
+      include: { group: { select: { id: true, name: true } } },
+    }) : Promise.resolve([]),
   ]);
   const locale = await getLocale();
   const t = getT(locale);
@@ -23,11 +32,12 @@ export default async function FeedPage() {
     <div className="min-h-screen bg-background">
       <AppHeader user={user} />
       <main className="container mx-auto max-w-2xl px-4 py-6">
-        <h2 className="text-xl font-semibold mb-4">{t("feed.title")}</h2>
-        <p className="text-muted-foreground text-sm mb-6">
+        <h2 className="text-xl font-semibold mb-2">{t("feed.title")}</h2>
+        <FeedTabs currentGroupId={groupId} groups={userGroups.map((m) => ({ id: m.group.id, name: m.group.name }))} />
+        <p className="text-muted-foreground text-sm mb-4">
           {t("feed.subtitle")}
         </p>
-        <CreatePostForm people={people} />
+        <CreatePostForm people={people} groupId={groupId} groups={userGroups.map((m) => ({ id: m.group.id, name: m.group.name }))} />
         <div className="mt-8 space-y-4">
           <FeedList posts={posts} />
         </div>

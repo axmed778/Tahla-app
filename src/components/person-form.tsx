@@ -81,6 +81,29 @@ export function PersonForm({ personId, initial, tags, linkToCurrentUser }: Props
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {serverError && <p className="text-sm text-destructive">{serverError}</p>}
 
+      {personId && (
+        <Card>
+          <CardHeader><h3 className="font-medium">{t("profile.visibility")}</h3></CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <Label>{t("profile.visibilityLabel")}</Label>
+              <Select
+                value={watch("profileVisibility") ?? "ALL"}
+                onValueChange={(v) => setValue("profileVisibility", v as "ALL" | "FRIENDS" | "FIRST_GEN")}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">{t("profile.visibilityAll")}</SelectItem>
+                  <SelectItem value="FRIENDS">{t("profile.visibilityFriends")}</SelectItem>
+                  <SelectItem value="FIRST_GEN">{t("profile.visibilityFirstGen")}</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">{t("profile.visibilityHint")}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader><h3 className="font-medium">{t("form.identity")}</h3></CardHeader>
         <CardContent className="space-y-4">

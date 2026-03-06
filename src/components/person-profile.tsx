@@ -27,14 +27,27 @@ type Props = {
   canEdit?: boolean;
   /** Current user's person id — user can remove any relationship that involves their profile. */
   currentUserPersonId?: string | null;
+  /** Whether to show contact / location / work / notes (privacy). Default true. */
+  showContact?: boolean;
+  showLocation?: boolean;
+  showWork?: boolean;
+  showNotes?: boolean;
 };
 
-export function PersonProfile({ person, age, formatDate, parents, children, siblings, spouse, other, t, canEdit, currentUserPersonId }: Props) {
+export function PersonProfile({ person, age, formatDate, parents, children, siblings, spouse, other, t, canEdit, currentUserPersonId, showContact = true, showLocation = true, showWork = true, showNotes = true }: Props) {
   const currentName = formatPersonName(person);
   const canRemove = (relatedPersonId: string) => !!canEdit || (!!currentUserPersonId && relatedPersonId === currentUserPersonId);
+  const photoUrl = (person as { photoUrl?: string | null }).photoUrl;
   return (
     <div className="space-y-6">
-      <div>
+      <div className="flex flex-col sm:flex-row items-start gap-4">
+        {photoUrl && (
+          <div className="relative w-28 h-28 rounded-full overflow-hidden bg-muted shrink-0">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photoUrl} alt="" className="w-full h-full object-cover" />
+          </div>
+        )}
+        <div>
         <h2 className="text-2xl font-bold">
           {formatPersonName(person)}
         </h2>
@@ -47,6 +60,7 @@ export function PersonProfile({ person, age, formatDate, parents, children, sibl
             ))}
           </div>
         )}
+        </div>
       </div>
 
       <section className="rounded-lg border p-4">
@@ -59,52 +73,58 @@ export function PersonProfile({ person, age, formatDate, parents, children, sibl
         </dl>
       </section>
 
-      <section className="rounded-lg border p-4">
-        <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide mb-3">{t("profile.contact")}</h3>
-        {person.phones.length === 0 && person.emails.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t("profile.noContactInfo")}</p>
-        ) : (
-          <dl className="space-y-2 text-sm">
-            {person.phones.map((p) => (
-              <div key={p.id}>
-                <dt className="text-muted-foreground">{p.label || t("profile.phone")}</dt>
-                <dd><a href={`tel:${p.number}`} className="underline">{p.number}</a></dd>
-              </div>
-            ))}
-            {person.emails.map((e) => (
-              <div key={e.id}>
-                <dt className="text-muted-foreground">{e.label || t("profile.email")}</dt>
-                <dd><a href={`mailto:${e.email}`} className="underline">{e.email}</a></dd>
-              </div>
-            ))}
-          </dl>
-        )}
-      </section>
+      {showContact && (
+        <section className="rounded-lg border p-4">
+          <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide mb-3">{t("profile.contact")}</h3>
+          {person.phones.length === 0 && person.emails.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t("profile.noContactInfo")}</p>
+          ) : (
+            <dl className="space-y-2 text-sm">
+              {person.phones.map((p) => (
+                <div key={p.id}>
+                  <dt className="text-muted-foreground">{p.label || t("profile.phone")}</dt>
+                  <dd><a href={`tel:${p.number}`} className="underline">{p.number}</a></dd>
+                </div>
+              ))}
+              {person.emails.map((e) => (
+                <div key={e.id}>
+                  <dt className="text-muted-foreground">{e.label || t("profile.email")}</dt>
+                  <dd><a href={`mailto:${e.email}`} className="underline">{e.email}</a></dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </section>
+      )}
 
-      <section className="rounded-lg border p-4">
-        <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide mb-3">{t("profile.location")}</h3>
-        {(person.country || person.city || person.address) ? (
-          <dl className="grid gap-2 text-sm">
-            {person.country && <div><dt className="text-muted-foreground">{t("profile.country")}</dt><dd>{person.country}</dd></div>}
-            {person.city && <div><dt className="text-muted-foreground">{t("profile.city")}</dt><dd>{person.city}</dd></div>}
-            {person.address && <div><dt className="text-muted-foreground">{t("profile.address")}</dt><dd>{person.address}</dd></div>}
-          </dl>
-        ) : (
-          <p className="text-sm text-muted-foreground">{t("profile.noLocation")}</p>
-        )}
-      </section>
+      {showLocation && (
+        <section className="rounded-lg border p-4">
+          <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide mb-3">{t("profile.location")}</h3>
+          {(person.country || person.city || person.address) ? (
+            <dl className="grid gap-2 text-sm">
+              {person.country && <div><dt className="text-muted-foreground">{t("profile.country")}</dt><dd>{person.country}</dd></div>}
+              {person.city && <div><dt className="text-muted-foreground">{t("profile.city")}</dt><dd>{person.city}</dd></div>}
+              {person.address && <div><dt className="text-muted-foreground">{t("profile.address")}</dt><dd>{person.address}</dd></div>}
+            </dl>
+          ) : (
+            <p className="text-sm text-muted-foreground">{t("profile.noLocation")}</p>
+          )}
+        </section>
+      )}
 
-      <section className="rounded-lg border p-4">
-        <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide mb-3">{t("profile.work")}</h3>
-        {(person.occupation || person.workplace) ? (
-          <dl className="grid gap-2 text-sm">
-            {person.occupation && <div><dt className="text-muted-foreground">{t("profile.occupation")}</dt><dd>{person.occupation}</dd></div>}
-            {person.workplace && <div><dt className="text-muted-foreground">{t("profile.workplace")}</dt><dd>{person.workplace}</dd></div>}
-          </dl>
-        ) : (
-          <p className="text-sm text-muted-foreground">{t("profile.noWorkInfo")}</p>
-        )}
-      </section>
+      {showWork && (
+        <section className="rounded-lg border p-4">
+          <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide mb-3">{t("profile.work")}</h3>
+          {(person.occupation || person.workplace) ? (
+            <dl className="grid gap-2 text-sm">
+              {person.occupation && <div><dt className="text-muted-foreground">{t("profile.occupation")}</dt><dd>{person.occupation}</dd></div>}
+              {person.workplace && <div><dt className="text-muted-foreground">{t("profile.workplace")}</dt><dd>{person.workplace}</dd></div>}
+            </dl>
+          ) : (
+            <p className="text-sm text-muted-foreground">{t("profile.noWorkInfo")}</p>
+          )}
+        </section>
+      )}
 
       <section className="rounded-lg border p-4">
         <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide mb-3">{t("profile.status")}</h3>
@@ -184,7 +204,7 @@ export function PersonProfile({ person, age, formatDate, parents, children, sibl
         </section>
       )}
 
-      {person.notes && (
+      {showNotes && person.notes && (
         <section className="rounded-lg border p-4">
           <h3 className="font-semibold text-muted-foreground text-sm uppercase tracking-wide mb-3">{t("profile.notes")}</h3>
           <p className="text-sm whitespace-pre-wrap">{person.notes}</p>

@@ -9,7 +9,12 @@ export default async function NewEventPage() {
     getCurrentUser(),
     prisma.user.findMany({
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
-      select: { id: true, firstName: true, lastName: true },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        person: { select: { city: true, birthDate: true, gender: true } },
+      },
     }),
     getLocale(),
     getLocale().then((l) => getT(l)),

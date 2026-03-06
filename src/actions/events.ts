@@ -4,6 +4,11 @@ import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { writeFile, mkdir } from "fs/promises";
+import path from "path";
+
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_SIZE = 5 * 1024 * 1024;
 
 export async function getEventsForCurrentUser() {
   const session = await getSession();
@@ -55,11 +60,24 @@ export async function createEvent(formData: FormData) {
   const date = new Date(dateStr);
   if (isNaN(date.getTime())) return { error: "Valid date is required" };
 
+  let imageUrl: string | null = null;
+  const photo = formData.get("photo") as File | null;
+  if (photo?.size && photo.size <= MAX_SIZE && ALLOWED_TYPES.includes(photo.type)) {
+    const ext = photo.type === "image/jpeg" ? ".jpg" : photo.type === "image/png" ? ".png" : ".webp";
+    const dir = path.join(process.cwd(), "public", "uploads", "events");
+    await mkdir(dir, { recursive: true });
+    const filename = `event-${Date.now()}${ext}`;
+    const filepath = path.join(dir, filename);
+    await writeFile(filepath, Buffer.from(await photo.arrayBuffer()));
+    imageUrl = `/uploads/events/${filename}`;
+  }
+
   const event = await prisma.event.create({
     data: {
       name,
       date,
       place,
+      imageUrl,
       createdById: session.userId,
     },
   });
