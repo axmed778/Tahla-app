@@ -27,6 +27,8 @@
   "register": {
     "title": "Создать аккаунт",
     "subtitle": "Регистрация по email, имени и паролю",
+    "birthDate": "Дата рождения (ДД/ММ/ГГГГ)",
+    "birthDatePlaceholder": "ДД/ММ/ГГГГ",
     "passwordMin": "Пароль (не менее 6 символов)",
     "createAccount": "Создать аккаунт",
     "hasAccount": "Уже есть аккаунт?",
@@ -91,7 +93,14 @@
     "exportImport": "Экспорт / Импорт",
     "masterOnly": "Только мастер",
     "masterOnlyDesc": "Сбросить все данные (люди, пользователи, друзья, лента). Только мастер может это сделать.",
-    "resetAppData": "Сбросить данные"
+    "resetAppData": "Сбросить данные",
+    "exportButton": "Экспорт всех данных (JSON)",
+    "exportHint": "Скачать JSON-файл со всеми людьми, тегами и связями.",
+    "importTitle": "Импорт JSON",
+    "importHint": "Проверка через Zod. Заменить (очистить и импорт) или объединить (по id).",
+    "replaceAll": "Заменить всё",
+    "merge": "Объединить",
+    "importSuccess": "Импорт выполнен. Страница перезагружена."
   },
   "common": {
     "back": "Назад",
@@ -99,7 +108,30 @@
     "viewFullTree": "Полное семейное древо",
     "backToDirectory": "В каталог",
     "language": "Язык",
-    "menu": "Меню"
+    "menu": "Меню",
+    "openMenu": "Открыть меню",
+    "closeMenu": "Закрыть меню",
+    "mainNav": "Основная навигация",
+    "selectLanguage": "Выбрать язык",
+    "all": "Все",
+    "apply": "Применить",
+    "previous": "Назад",
+    "next": "Вперёд"
+  },
+  "directory": {
+    "searchFilters": "Поиск и фильтры",
+    "search": "Поиск",
+    "searchPlaceholder": "Имя, телефон, город, работа, теги…",
+    "city": "Город",
+    "allCities": "Все города",
+    "maritalStatus": "Семейное положение",
+    "gender": "Пол",
+    "sort": "Сортировка",
+    "lastUpdated": "По обновлению",
+    "nameAZ": "По имени А–Я",
+    "relatives": "Родственники",
+    "noPeopleFound": "Никого не найдено.",
+    "pageOf": "Страница {current} из {total}"
   },
   "tree": {
     "title": "Семейное древо",
@@ -273,6 +305,23 @@
     "members": "участников",
     "name": "Название",
     "description": "Описание",
-    "back": "К списку групп"
+    "back": "К списку групп",
+    "myGroups": "Мои группы",
+    "discover": "Другие группы",
+    "noDiscover": "Нет других публичных групп.",
+    "private": "Закрытая (вступление по заявке)",
+    "public": "Публичная (вступить может любой)",
+    "visibility": "Видимость",
+    "setPrivate": "Сделать закрытой",
+    "setPublic": "Сделать публичной",
+    "applications": "Заявки на вступление",
+    "noApplications": "Нет заявок.",
+    "approve": "Принять",
+    "reject": "Отклонить",
+    "applyToJoin": "Подать заявку",
+    "joinGroup": "Вступить",
+    "leaveGroup": "Выйти из группы",
+    "feed": "Лента",
+    "admin": "Админ"
   }
 }

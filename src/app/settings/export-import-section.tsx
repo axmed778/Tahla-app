@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { getExportData, importData, type ImportMode } from "@/actions/import-export";
+import { useTranslations } from "@/components/i18n-provider";
 
 export function ExportImportSection() {
+  const t = useTranslations();
   const [importError, setImportError] = useState<string | null>(null);
   const [importSuccess, setImportSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -41,12 +43,12 @@ export function ExportImportSection() {
   return (
     <div className="space-y-4">
       <div>
-        <Button onClick={handleExport} variant="outline">Export all data (JSON)</Button>
-        <p className="text-sm text-muted-foreground mt-1">Download a JSON file with all people, tags, and relationships.</p>
+        <Button onClick={handleExport} variant="outline">{t("settings.exportButton")}</Button>
+        <p className="text-sm text-muted-foreground mt-1">{t("settings.exportHint")}</p>
       </div>
       <div>
-        <p className="text-sm font-medium mb-2">Import JSON</p>
-        <p className="text-sm text-muted-foreground mb-2">Validate with Zod. Choose replace (clear then import) or merge (match by id).</p>
+        <p className="text-sm font-medium mb-2">{t("settings.importTitle")}</p>
+        <p className="text-sm text-muted-foreground mb-2">{t("settings.importHint")}</p>
         <div className="flex flex-wrap gap-2">
           <label className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium ring-offset-background hover:bg-accent hover:text-accent-foreground cursor-pointer disabled:opacity-50">
             <input
@@ -56,7 +58,7 @@ export function ExportImportSection() {
               onChange={(e) => handleImport(e, "replace")}
               disabled={loading}
             />
-            Replace all
+            {t("settings.replaceAll")}
           </label>
           <label className="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium ring-offset-background hover:bg-accent hover:text-accent-foreground cursor-pointer disabled:opacity-50">
             <input
@@ -66,11 +68,11 @@ export function ExportImportSection() {
               onChange={(e) => handleImport(e, "merge")}
               disabled={loading}
             />
-            Merge
+            {t("settings.merge")}
           </label>
         </div>
         {importError && <p className="text-sm text-destructive mt-2">{importError}</p>}
-        {importSuccess && <p className="text-sm text-green-600 mt-2">Import successful. Page reloaded.</p>}
+        {importSuccess && <p className="text-sm text-green-600 mt-2">{t("settings.importSuccess")}</p>}
       </div>
     </div>
   );

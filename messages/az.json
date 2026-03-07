@@ -27,6 +27,8 @@
   "register": {
     "title": "Hesab yarat",
     "subtitle": "Email, ad və parolunuzla qeydiyyatdan keçin",
+    "birthDate": "Doğum tarixi (GG/AA/İİİİ)",
+    "birthDatePlaceholder": "GG/AA/İİİİ",
     "passwordMin": "Parol (minimum 6 simvol)",
     "createAccount": "Hesab yarat",
     "hasAccount": "Artıq hesabınız var?",
@@ -91,7 +93,14 @@
     "exportImport": "İxrac / İdxal",
     "masterOnly": "Yalnız Master",
     "masterOnlyDesc": "Bütün məlumatları sıfırlayın (şəxslər, istifadəçilər, dostlar, xəbərlər). Bunu yalnız master hesab edə bilər.",
-    "resetAppData": "Məlumatları sıfırla"
+    "resetAppData": "Məlumatları sıfırla",
+    "exportButton": "Bütün məlumatları ixrac et (JSON)",
+    "exportHint": "Bütün şəxslər, teqlər və əlaqələr olan JSON faylı endirin.",
+    "importTitle": "JSON idxal",
+    "importHint": "Zod ilə yoxlayın. Əvəz et (təmizlə və idxal) və ya birləşdir (id-ə görə).",
+    "replaceAll": "Hamısını əvəz et",
+    "merge": "Birləşdir",
+    "importSuccess": "İdxal uğurlu. Səhifə yeniləndi."
   },
   "common": {
     "back": "Geri",
@@ -99,7 +108,30 @@
     "viewFullTree": "Tam ailə ağacı",
     "backToDirectory": "Kataloqa qayıt",
     "language": "Dil",
-    "menu": "Menyu"
+    "menu": "Menyu",
+    "openMenu": "Menyunu aç",
+    "closeMenu": "Menyunu bağla",
+    "mainNav": "Əsas naviqasiya",
+    "selectLanguage": "Dil seçin",
+    "all": "Hamısı",
+    "apply": "Tətbiq et",
+    "previous": "Əvvəlki",
+    "next": "Növbəti"
+  },
+  "directory": {
+    "searchFilters": "Axtarış və filtrlər",
+    "search": "Axtarış",
+    "searchPlaceholder": "Ad, telefon, şəhər, iş yeri, teqlər…",
+    "city": "Şəhər",
+    "allCities": "Bütün şəhərlər",
+    "maritalStatus": "Ailə vəziyyəti",
+    "gender": "Cins",
+    "sort": "Çeşidləmə",
+    "lastUpdated": "Son yeniləmə",
+    "nameAZ": "A–Z",
+    "relatives": "Qohumlar",
+    "noPeopleFound": "Heç kəs tapılmadı.",
+    "pageOf": "Səhifə {current} / {total}"
   },
   "tree": {
     "title": "Ailə ağacı",
@@ -273,6 +305,23 @@
     "members": "üzv",
     "name": "Ad",
     "description": "Təsvir",
-    "back": "Qruplara qayıt"
+    "back": "Qruplara qayıt",
+    "myGroups": "Qruplarım",
+    "discover": "Digər qruplar",
+    "noDiscover": "Başqa ictimai qrup yoxdur.",
+    "private": "Gizli (müraciətlə qoşulma)",
+    "public": "İctimai (hər kəs qoşula bilər)",
+    "visibility": "Görünmə",
+    "setPrivate": "Gizli et",
+    "setPublic": "İctimai et",
+    "applications": "Qoşulma müraciətləri",
+    "noApplications": "Gözləyən müraciət yoxdur.",
+    "approve": "Qəbul et",
+    "reject": "Rədd et",
+    "applyToJoin": "Müraciət et",
+    "joinGroup": "Qrupa qoşul",
+    "leaveGroup": "Qrupdan çıx",
+    "feed": "Lent",
+    "admin": "Admin"
   }
 }

@@ -61,6 +61,17 @@ export function RegisterForm() {
         />
       </div>
       <div className="space-y-2">
+        <Label htmlFor="birthDate">{t("register.birthDate")}</Label>
+        <Input
+          id="birthDate"
+          name="birthDate"
+          type="text"
+          autoComplete="bday"
+          placeholder={t("register.birthDatePlaceholder")}
+          maxLength={10}
+        />
+      </div>
+      <div className="space-y-2">
         <Label htmlFor="password">{t("register.passwordMin")}</Label>
         <Input
           id="password"

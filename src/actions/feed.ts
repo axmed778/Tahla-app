@@ -11,6 +11,16 @@ const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE = 5 * 1024 * 1024;
 
 export async function getFeed(limit = 50, groupId?: string | null) {
+  const session = await getSession();
+  if (!session) return [];
+
+  if (groupId) {
+    const member = await prisma.groupMember.findUnique({
+      where: { groupId_userId: { groupId, userId: session.userId } },
+    });
+    if (!member) return [];
+  }
+
   const posts = await prisma.post.findMany({
     where: groupId === undefined ? { groupId: null } : { groupId: groupId ?? null },
     orderBy: { createdAt: "desc" },
@@ -46,6 +56,12 @@ export async function createPost(formData: FormData) {
       : [];
   if (!POST_TYPES.includes(type as (typeof POST_TYPES)[number])) return { error: "Invalid type" };
   if (!content) return { error: "Content is required" };
+  if (groupId) {
+    const member = await prisma.groupMember.findUnique({
+      where: { groupId_userId: { groupId, userId: session.userId } },
+    });
+    if (!member) return { error: "You are not a member of this group" };
+  }
   const post = await prisma.post.create({
     data: {
       type,

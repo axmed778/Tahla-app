@@ -36,7 +36,7 @@ export function AppHeader({ user }: { user: User | null }) {
             variant="ghost"
             size="icon"
             className="h-9 w-9 shrink-0"
-            aria-label="Open menu"
+            aria-label={t("common.openMenu")}
             onClick={() => setMenuOpen(true)}
           >
             <Menu className="h-5 w-5" />
@@ -94,7 +94,7 @@ export function AppHeader({ user }: { user: User | null }) {
           "fixed left-0 top-0 z-50 h-full w-64 border-r bg-background shadow-lg transition-transform duration-200 ease-out",
           menuOpen ? "translate-x-0" : "-translate-x-full"
         )}
-        aria-label="Main navigation"
+        aria-label={t("common.mainNav")}
       >
         <div className="flex h-14 items-center justify-between border-b px-4">
           <span className="font-semibold">{t("common.menu")}</span>
@@ -102,7 +102,7 @@ export function AppHeader({ user }: { user: User | null }) {
             type="button"
             variant="ghost"
             size="icon"
-            aria-label="Close menu"
+            aria-label={t("common.closeMenu")}
             onClick={() => setMenuOpen(false)}
           >
             <X className="h-5 w-5" />

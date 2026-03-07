@@ -16,14 +16,15 @@ model Settings {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
+  id           String    @id @default(uuid())
+  email        String    @unique
   firstName    String
   lastName     String
   passwordHash String
-  isMaster     Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  birthDate    DateTime?
+  isMaster     Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   person             Person?
   friendshipsA       Friendship[] @relation("UserA")
@@ -38,6 +39,7 @@ model User {
   messagesSent       Message[]
   groupsCreated      Group[]
   groupMembers       GroupMember[]
+  groupApplications  GroupApplication[]
 
   @@unique([firstName, lastName])
   @@index([firstName, lastName])
@@ -276,19 +278,37 @@ model Group {
   id          String   @id @default(uuid())
   name        String
   description String?
+  isPrivate   Boolean  @default(false)
   createdById String
   createdAt   DateTime @default(now())
 
-  createdBy User         @relation(fields: [createdById], references: [id], onDelete: Cascade)
-  members   GroupMember[]
-  posts     Post[]
+  createdBy    User              @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  members      GroupMember[]
+  posts        Post[]
+  applications GroupApplication[]
 }
 
 model GroupMember {
   id        String   @id @default(uuid())
   groupId   String
   userId    String
+  role      String   @default("MEMBER") // ADMIN | MEMBER
   joinedAt  DateTime @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+}
+
+model GroupApplication {
+  id        String   @id @default(uuid())
+  groupId   String
+  userId    String
+  status    String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  createdAt DateTime @default(now())
 
   group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)

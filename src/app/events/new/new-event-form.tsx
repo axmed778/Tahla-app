@@ -117,7 +117,7 @@ export function NewEventForm({ users }: { users: User[] }) {
       </div>
       <div className="space-y-2">
         <Label>{t("events.photo")}</Label>
-        <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" className="text-sm" />
+        <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" className="text-sm mr-3" />
       </div>
       <div className="space-y-2">
         <Label>{t("events.invitees")}</Label>

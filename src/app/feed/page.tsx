@@ -12,21 +12,22 @@ type SearchParams = Promise<{ group?: string }>;
 export default async function FeedPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const groupId = params.group?.trim() || null;
-  const [user, posts, people, userGroups] = await Promise.all([
-    getCurrentUser(),
+  const user = await getCurrentUser();
+  if (!user) return null;
+
+  const [posts, people, userGroups] = await Promise.all([
     getFeed(50, groupId),
     prisma.person.findMany({
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
       select: { id: true, firstName: true, middleName: true, lastName: true },
     }),
-    user ? prisma.groupMember.findMany({
+    prisma.groupMember.findMany({
       where: { userId: user.id },
       include: { group: { select: { id: true, name: true } } },
-    }) : Promise.resolve([]),
+    }),
   ]);
   const locale = await getLocale();
   const t = getT(locale);
-  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-background">

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Person, PersonPhone, PersonEmail, PersonTag, Tag, Relationship } from "@prisma/client";
 import { formatPersonName } from "@/lib/utils";
 import { RemoveRelationshipButton } from "@/components/remove-relationship-button";
+import { ImageLightbox } from "@/components/image-lightbox";
 
 type PersonWithRelations = Person & {
   phones: PersonPhone[];
@@ -42,10 +43,10 @@ export function PersonProfile({ person, age, formatDate, parents, children, sibl
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start gap-4">
         {photoUrl && (
-          <div className="relative w-28 h-28 rounded-full overflow-hidden bg-muted shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={photoUrl} alt="" className="w-full h-full object-cover" />
-          </div>
+          <ImageLightbox
+            src={photoUrl}
+            className="relative w-28 h-28 rounded-full overflow-hidden bg-muted shrink-0"
+          />
         )}
         <div>
         <h2 className="text-2xl font-bold">

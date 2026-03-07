@@ -33,6 +33,16 @@ export function CreateGroupForm() {
         <Label htmlFor="description">{t("groups.description")}</Label>
         <Input id="description" name="description" />
       </div>
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="isPrivate"
+          name="isPrivate"
+          value="true"
+          className="rounded border-input"
+        />
+        <Label htmlFor="isPrivate" className="font-normal">{t("groups.private")}</Label>
+      </div>
       {error && <p className="text-sm text-destructive">{error}</p>}
       <Button type="submit" disabled={loading}>{t("groups.create")}</Button>
     </form>

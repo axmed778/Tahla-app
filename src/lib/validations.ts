@@ -23,11 +23,25 @@ export const loginSchema = z.object({
   password: passwordSchema,
 });
 
+const birthDateDdMmYyyySchema = z
+  .string()
+  .regex(/^\d{1,2}\/\d{1,2}\/\d{4}$/, "Use DD/MM/YYYY")
+  .refine(
+    (s) => {
+      const [d, m, y] = s.split("/").map(Number);
+      if (m < 1 || m > 12) return false;
+      const date = new Date(y, m - 1, d);
+      return date.getFullYear() === y && date.getMonth() === m - 1 && date.getDate() === d;
+    },
+    { message: "Invalid date" }
+  );
+
 export const registerSchema = z.object({
   email: emailSchema,
   firstName: nameSchema,
   lastName: nameSchema,
   password: passwordSchema,
+  birthDate: birthDateDdMmYyyySchema.optional(),
 });
 
 export const changePasswordSchema = z.object({

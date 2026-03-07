@@ -1,6 +1,6 @@
 "use client";
 
-import { useLocale } from "@/components/i18n-provider";
+import { useLocale, useTranslations } from "@/components/i18n-provider";
 import { setLocale } from "@/actions/locale";
 import { SUPPORTED_LOCALES } from "@/lib/i18n-config";
 import { useRef } from "react";
@@ -20,6 +20,7 @@ const CLOUDY_DROPDOWN =
 
 export function LanguageSwitcher() {
   const current = useLocale();
+  const t = useTranslations();
   const formRef = useRef<HTMLFormElement>(null);
 
   function handleChange(value: string) {
@@ -41,7 +42,7 @@ export function LanguageSwitcher() {
             "h-9 w-[72px] border-0 bg-background/80 shadow-[0_2px_12px_rgba(0,0,0,0.08),0_4px_24px_rgba(0,0,0,0.04)] focus:ring-0 focus:shadow-[0_4px_20px_rgba(0,0,0,0.1)]"
           )}
         >
-          <SelectValue aria-label="Select language" />
+          <SelectValue aria-label={t("common.selectLanguage")} />
         </SelectTrigger>
         <SelectContent className={cn(CLOUDY_DROPDOWN)} position="popper">
           {SUPPORTED_LOCALES.map((loc) => (

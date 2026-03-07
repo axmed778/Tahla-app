@@ -1,13 +1,14 @@
 import { getCurrentUser } from "@/actions/auth";
-import { getGroupsForUser } from "@/actions/groups";
+import { getGroupsForUser, getAvailableGroups } from "@/actions/groups";
 import { AppHeader } from "@/components/app-header";
 import { getLocale, getT } from "@/lib/i18n";
 import Link from "next/link";
 
 export default async function GroupsPage() {
-  const [user, groups] = await Promise.all([
+  const [user, myGroups, discoverGroups] = await Promise.all([
     getCurrentUser(),
     getGroupsForUser(),
+    getAvailableGroups(),
   ]);
   const locale = await getLocale();
   const t = getT(locale);
@@ -27,28 +28,58 @@ export default async function GroupsPage() {
           </Link>
         </div>
         <p className="text-muted-foreground text-sm mb-4">{t("groups.subtitle")}</p>
-        {groups.length === 0 ? (
-          <p className="text-muted-foreground text-sm">{t("groups.noGroups")}</p>
-        ) : (
-          <ul className="space-y-3">
-            {groups.map((g) => (
-              <li key={g.id}>
-                <Link
-                  href={`/feed?group=${encodeURIComponent(g.id)}`}
-                  className="block rounded-lg border p-4 hover:bg-muted/50"
-                >
-                  <span className="font-medium">{g.name}</span>
-                  {g.description && (
-                    <p className="text-sm text-muted-foreground mt-1">{g.description}</p>
-                  )}
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {g._count.members} {t("groups.members")}
-                  </p>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+
+        <section className="mb-8">
+          <h3 className="font-medium mb-3">{t("groups.myGroups")}</h3>
+          {myGroups.length === 0 ? (
+            <p className="text-muted-foreground text-sm">{t("groups.noGroups")}</p>
+          ) : (
+            <ul className="space-y-3">
+              {myGroups.map((g) => (
+                <li key={g.id}>
+                  <Link
+                    href={`/groups/${g.id}`}
+                    className="block rounded-lg border p-4 hover:bg-muted/50"
+                  >
+                    <span className="font-medium">{g.name}</span>
+                    {g.description && (
+                      <p className="text-sm text-muted-foreground mt-1">{g.description}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {g._count.members} {t("groups.members")}
+                    </p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section>
+          <h3 className="font-medium mb-3">{t("groups.discover")}</h3>
+          {discoverGroups.length === 0 ? (
+            <p className="text-muted-foreground text-sm">{t("groups.noDiscover")}</p>
+          ) : (
+            <ul className="space-y-3">
+              {discoverGroups.map((g) => (
+                <li key={g.id}>
+                  <Link
+                    href={`/groups/${g.id}`}
+                    className="block rounded-lg border p-4 hover:bg-muted/50"
+                  >
+                    <span className="font-medium">{g.name}</span>
+                    {g.description && (
+                      <p className="text-sm text-muted-foreground mt-1">{g.description}</p>
+                    )}
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {g._count.members} {t("groups.members")}
+                    </p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       </main>
     </div>
   );

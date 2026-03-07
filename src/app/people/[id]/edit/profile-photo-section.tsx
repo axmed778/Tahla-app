@@ -1,15 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { uploadPersonPhoto, removePersonPhoto } from "@/actions/people";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useTranslations } from "@/components/i18n-provider";
+import { ImageLightbox } from "@/components/image-lightbox";
 import { Camera, Trash2, Loader2 } from "lucide-react";
 
 export function ProfilePhotoSection({ personId, photoUrl }: { personId: string; photoUrl: string | null }) {
   const t = useTranslations();
+  const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -18,23 +20,31 @@ export function ProfilePhotoSection({ personId, photoUrl }: { personId: string; 
     if (!file) return;
     setError(null);
     setPending(true);
-    const formData = new FormData();
-    formData.set("personId", personId);
-    formData.set("photo", file);
-    const result = await uploadPersonPhoto(formData);
-    setPending(false);
-    e.target.value = "";
-    if (result?.error) setError(result.error);
+    try {
+      const formData = new FormData();
+      formData.set("personId", personId);
+      formData.set("photo", file);
+      const result = await uploadPersonPhoto(formData);
+      if (result?.error) setError(result.error);
+      else router.refresh();
+    } finally {
+      setPending(false);
+      e.target.value = "";
+    }
   }
 
   async function handleRemove() {
     setError(null);
     setPending(true);
-    const fd = new FormData();
-    fd.set("personId", personId);
-    const result = await removePersonPhoto(fd);
-    setPending(false);
-    if (result?.error) setError(result.error);
+    try {
+      const fd = new FormData();
+      fd.set("personId", personId);
+      const result = await removePersonPhoto(fd);
+      if (result?.error) setError(result.error);
+      else router.refresh();
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
@@ -45,13 +55,7 @@ export function ProfilePhotoSection({ personId, photoUrl }: { personId: string; 
       <CardContent className="flex flex-col sm:flex-row items-start gap-4">
         <div className="relative w-24 h-24 rounded-full overflow-hidden bg-muted shrink-0">
           {photoUrl ? (
-            <Image
-              src={photoUrl}
-              alt=""
-              fill
-              className="object-cover"
-              sizes="96px"
-            />
+            <ImageLightbox src={photoUrl} className="w-full h-full" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <Camera className="w-10 h-10 text-muted-foreground" />

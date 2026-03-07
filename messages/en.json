@@ -25,6 +25,8 @@
   "register": {
     "title": "Create account",
     "subtitle": "Register with your email, name and password",
+    "birthDate": "Birth date (DD/MM/YYYY)",
+    "birthDatePlaceholder": "DD/MM/YYYY",
     "passwordMin": "Password (min 6 characters)",
     "createAccount": "Create account",
     "hasAccount": "Already have an account?",
@@ -89,7 +91,14 @@
     "exportImport": "Export / Import",
     "masterOnly": "Master only",
     "masterOnlyDesc": "Reset all app data (people, users, friends, feed). Only the master account can do this.",
-    "resetAppData": "Reset app data"
+    "resetAppData": "Reset app data",
+    "exportButton": "Export all data (JSON)",
+    "exportHint": "Download a JSON file with all people, tags, and relationships.",
+    "importTitle": "Import JSON",
+    "importHint": "Validate with Zod. Choose replace (clear then import) or merge (match by id).",
+    "replaceAll": "Replace all",
+    "merge": "Merge",
+    "importSuccess": "Import successful. Page reloaded."
   },
   "common": {
     "back": "Back",
@@ -97,7 +106,30 @@
     "viewFullTree": "View full tree",
     "backToDirectory": "Back to directory",
     "language": "Language",
-    "menu": "Menu"
+    "menu": "Menu",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "mainNav": "Main navigation",
+    "selectLanguage": "Select language",
+    "all": "All",
+    "apply": "Apply",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "directory": {
+    "searchFilters": "Search & filters",
+    "search": "Search",
+    "searchPlaceholder": "Name, phone, city, workplace, tags…",
+    "city": "City",
+    "allCities": "All cities",
+    "maritalStatus": "Marital status",
+    "gender": "Gender",
+    "sort": "Sort",
+    "lastUpdated": "Last updated",
+    "nameAZ": "A–Z",
+    "relatives": "Relatives",
+    "noPeopleFound": "No people found.",
+    "pageOf": "Page {current} of {total}"
   },
   "tree": {
     "title": "Family tree",
@@ -271,7 +303,24 @@
     "members": "members",
     "name": "Name",
     "description": "Description",
-    "back": "Back to groups"
+    "back": "Back to groups",
+    "myGroups": "My groups",
+    "discover": "Discover groups",
+    "noDiscover": "No other public groups to join.",
+    "private": "Private (join by application)",
+    "public": "Public (anyone can join)",
+    "visibility": "Visibility",
+    "setPrivate": "Make private",
+    "setPublic": "Make public",
+    "applications": "Join applications",
+    "noApplications": "No pending applications.",
+    "approve": "Approve",
+    "reject": "Reject",
+    "applyToJoin": "Apply to join",
+    "joinGroup": "Join group",
+    "leaveGroup": "Leave group",
+    "feed": "Feed",
+    "admin": "Admin"
   },
   "nav": {
     "directory": "Directory",

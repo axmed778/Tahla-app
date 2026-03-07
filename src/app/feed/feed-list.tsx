@@ -7,6 +7,7 @@ import { addComment } from "@/actions/feed";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { X } from "lucide-react";
 
 type RelatedPerson = { id: string; firstName: string; middleName: string | null; lastName: string };
 
@@ -28,46 +29,79 @@ type Post = {
 
 export function FeedList({ posts }: { posts: Post[] }) {
   const t = useTranslations();
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   if (posts.length === 0) {
     return <p className="text-muted-foreground text-sm">{t("feed.noPosts")}</p>;
   }
 
   return (
-    <ul className="space-y-4">
-      {posts.map((post) => (
-        <li key={post.id} className="rounded-lg border p-4 bg-background">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-            <span className="font-medium text-foreground">
-              {post.author.firstName} {post.author.lastName}
-            </span>
-            <span>·</span>
-            <span>{t(`feed.types.${post.type}`)}</span>
-            {post.relatedPeople.length > 0 && (
-              <>
-                <span>·</span>
-                {post.relatedPeople.map(({ person }, i) => (
-                  <span key={person.id}>
-                    {i > 0 && ", "}
-                    <Link href={`/people/${person.id}`} className="hover:underline">
-                      {formatPersonName(person)}
-                    </Link>
-                  </span>
-                ))}
-              </>
-            )}
-          </div>
-          <p className="text-sm whitespace-pre-wrap">{post.content}</p>
-          {post.images.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {post.images.map((img) => (
-                <div key={img.id} className="relative w-32 h-32 rounded overflow-hidden bg-muted">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={img.imageUrl} alt="" className="w-full h-full object-cover" />
-                </div>
-              ))}
+    <>
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+          onClick={() => setLightboxUrl(null)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === "Escape" && setLightboxUrl(null)}
+          aria-label="Close"
+        >
+          <button
+            type="button"
+            className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+            onClick={() => setLightboxUrl(null)}
+            aria-label="Close"
+          >
+            <X className="h-6 w-6" />
+          </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={lightboxUrl}
+            alt=""
+            className="max-h-full max-w-full object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+      <ul className="space-y-4">
+        {posts.map((post) => (
+          <li key={post.id} className="rounded-lg border p-4 bg-background">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+              <span className="font-medium text-foreground">
+                {post.author.firstName} {post.author.lastName}
+              </span>
+              <span>·</span>
+              <span>{t(`feed.types.${post.type}`)}</span>
+              {post.relatedPeople.length > 0 && (
+                <>
+                  <span>·</span>
+                  {post.relatedPeople.map(({ person }, i) => (
+                    <span key={person.id}>
+                      {i > 0 && ", "}
+                      <Link href={`/people/${person.id}`} className="hover:underline">
+                        {formatPersonName(person)}
+                      </Link>
+                    </span>
+                  ))}
+                </>
+              )}
             </div>
-          )}
+            <p className="text-sm whitespace-pre-wrap">{post.content}</p>
+            {post.images.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {post.images.map((img) => (
+                  <button
+                    key={img.id}
+                    type="button"
+                    className="relative w-32 h-32 rounded overflow-hidden bg-muted cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 hover:opacity-95"
+                    onClick={() => setLightboxUrl(img.imageUrl)}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={img.imageUrl} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           <p className="text-xs text-muted-foreground mt-2">
             {new Date(post.createdAt).toLocaleString()}
           </p>
@@ -86,6 +120,7 @@ export function FeedList({ posts }: { posts: Post[] }) {
         </li>
       ))}
     </ul>
+    </>
   );
 }
 

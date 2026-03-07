@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 
-const MAX_DEPTH = 3;
+/** 3 generations: root, parents/children/spouse, then their parents/children (depth 0, 1, 2) */
+const MAX_DEPTH = 2;
 
 type PersonNode = {
   id: string;

@@ -12,10 +12,11 @@ export async function register(formData: FormData) {
     firstName: (formData.get("firstName") ?? "").toString().trim(),
     lastName: (formData.get("lastName") ?? "").toString().trim(),
     password: formData.get("password") ?? "",
+    birthDate: (formData.get("birthDate") as string)?.trim() || undefined,
   });
   if (!parsed.success) {
     const flat = parsed.error.flatten().fieldErrors;
-    return { error: flat.email?.[0] ?? flat.firstName?.[0] ?? flat.lastName?.[0] ?? flat.password?.[0] ?? "Invalid input" };
+    return { error: flat.email?.[0] ?? flat.firstName?.[0] ?? flat.lastName?.[0] ?? flat.password?.[0] ?? flat.birthDate?.[0] ?? "Invalid input" };
   }
   const existingByEmail = await prisma.user.findUnique({
     where: { email: parsed.data.email },
@@ -24,12 +25,19 @@ export async function register(formData: FormData) {
 
   const isFirst = (await prisma.user.count()) === 0;
   const passwordHash = await bcrypt.hash(parsed.data.password, 10);
+  const birthDateParsed = parsed.data.birthDate
+    ? (() => {
+        const [d, m, y] = parsed.data.birthDate!.split("/").map(Number);
+        return new Date(y, m - 1, d);
+      })()
+    : null;
   const user = await prisma.user.create({
     data: {
       email: parsed.data.email,
       firstName: parsed.data.firstName,
       lastName: parsed.data.lastName,
       passwordHash,
+      birthDate: birthDateParsed,
       isMaster: isFirst,
     },
   });
@@ -74,6 +82,7 @@ export async function getCurrentUser() {
       id: true,
       firstName: true,
       lastName: true,
+      birthDate: true,
       isMaster: true,
       person: { select: { id: true } },
     },
@@ -83,6 +92,7 @@ export async function getCurrentUser() {
     id: user.id,
     firstName: user.firstName,
     lastName: user.lastName,
+    birthDate: user.birthDate ?? null,
     isMaster: user.isMaster,
     personId: user.person?.id ?? null,
   };
@@ -211,7 +221,10 @@ export async function resetAppData() {
   await clearSession();
   await prisma.eventParticipant.deleteMany({});
   await prisma.event.deleteMany({});
+  await prisma.groupApplication.deleteMany({});
+  await prisma.groupMember.deleteMany({});
   await prisma.post.deleteMany({});
+  await prisma.group.deleteMany({});
   await prisma.friendship.deleteMany({});
   await prisma.relationship.deleteMany({});
   await prisma.personTag.deleteMany({});

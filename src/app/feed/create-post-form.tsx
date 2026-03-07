@@ -49,7 +49,11 @@ export function CreatePostForm({ people, groupId, groups }: { people: Person[]; 
     formData.set("type", type);
     formData.set("relatedPersonIds", relatedPersonIds.join(","));
     if (groupId) formData.set("groupId", groupId);
-    photoFiles.forEach((f) => formData.append("photos", f));
+    // Include files from form (name="photos") and from state (in case form doesn't serialize)
+    const formPhotos = formData.getAll("photos");
+    if (photoFiles.length > 0 && formPhotos.length === 0) {
+      photoFiles.forEach((f) => formData.append("photos", f));
+    }
     const result = await createPost(formData);
     setLoading(false);
     if (result?.error) setError(result.error);
@@ -65,7 +69,8 @@ export function CreatePostForm({ people, groupId, groups }: { people: Person[]; 
     <form onSubmit={handleSubmit} className="space-y-4 p-4 rounded-lg border bg-muted/30">
       <div className="space-y-2">
         <Label>{t("feed.type")}</Label>
-        <Select name="type" required value={type} onValueChange={setType}>
+        <input type="hidden" name="type" value={type} readOnly />
+        <Select required value={type} onValueChange={setType}>
           <SelectTrigger>
             <SelectValue placeholder={t("feed.type")} />
           </SelectTrigger>
@@ -102,9 +107,10 @@ export function CreatePostForm({ people, groupId, groups }: { people: Person[]; 
         <Label>{t("feed.photos")}</Label>
         <input
           type="file"
+          name="photos"
           accept="image/jpeg,image/png,image/webp"
           multiple
-          className="text-sm"
+          className="text-sm mr-3"
           onChange={(e) => setPhotoFiles(Array.from(e.target.files ?? []))}
         />
         {photoFiles.length > 0 && (
@@ -162,7 +168,7 @@ export function CreatePostForm({ people, groupId, groups }: { people: Person[]; 
         )}
       </div>
       {error && <p className="text-sm text-destructive">{error}</p>}
-      <Button type="submit" disabled={loading}>{t("feed.post")}</Button>
+      <Button type="submit" disabled={loading || !type}>{t("feed.post")}</Button>
     </form>
   );
 }

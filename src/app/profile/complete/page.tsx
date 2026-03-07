@@ -19,7 +19,7 @@ export default async function ProfileCompletePage() {
     lastName: user.lastName,
     middleName: "",
     gender: "OTHER" as const,
-    birthDate: "",
+    birthDate: user.birthDate ? user.birthDate.toISOString().slice(0, 10) : "",
     deathDate: "",
     country: "",
     city: "",
