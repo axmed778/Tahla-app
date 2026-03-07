@@ -1,0 +1,30 @@
+1. Only master can add and delete user *except user him/her self
+2. Add events where we can add a participant like an a invitation (event name, date, place, invitation list (visible to invited people) 
+3. Add a selector for countries and cities. (will be a lot easier to sort in the future)
+4. Still no family tree tab (possible to admin to change it no matter what 
+
+
+
+
+1. birthday format 
+2. groups dont show
+
+0. TREEEEEEE
+1. Security
+2. READ ME master data remove
+3. Chechlist for all the functions 
+4. Deployin online database with possible changes through admin login
+5. e mail verification
+6. Domain buyout
+7. Testing mobile migration
+
+
+1. MVP
+2. Deploying for 10-20 person 
+3. Server monitoring 
+4. Bug fixes 
+5. Bug fixes 
+6. Bug fixes
+
+1. Adding new features (upon request)
+2. Scaling to 50 person.
