@@ -2,21 +2,24 @@
 2. Add events where we can add a participant like an a invitation (event name, date, place, invitation list (visible to invited people) 
 3. Add a selector for countries and cities. (will be a lot easier to sort in the future)
 4. Still no family tree tab (possible to admin to change it no matter what 
-
+/ DONE /
 
 
 
 1. birthday format 
 2. groups dont show
+/ DONE /
 
-0. TREEEEEEE
-1. Security
-2. READ ME master data remove
+0. TREEEEEEE 
+1. Security +
+2. READ ME master data remove +
 3. Chechlist for all the functions 
 4. Deployin online database with possible changes through admin login
 5. e mail verification
 6. Domain buyout
 7. Testing mobile migration
+8. The secure cookie flag is still only set in production (process.env.NODE_ENV === "production"). This is standard Next.js practice and fine for most setups, but worth being aware of if you ever run a staging environment over HTTPS.
+Overall — solid work. All 13 issues from the original audit are addressed. The codebase is in a meaningfully more secure state.2 / 2
 
 
 1. MVP
