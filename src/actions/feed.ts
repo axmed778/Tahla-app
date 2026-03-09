@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { POST_TYPES } from "@/lib/feed";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import { validateImageFile } from "@/lib/file-upload";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE = 5 * 1024 * 1024;
@@ -84,12 +85,13 @@ export async function createPost(formData: FormData) {
       const file = files[i];
       if (!file?.size || file.size > MAX_SIZE) continue;
       if (!ALLOWED_TYPES.includes(file.type)) continue;
-      const ext = file.type === "image/jpeg" ? ".jpg" : file.type === "image/png" ? ".png" : ".webp";
-      const filename = `${post.id}-${Date.now()}-${i}${ext}`;
-      const filepath = path.join(dir, filename);
-      await writeFile(filepath, Buffer.from(await file.arrayBuffer()));
+      const bytes = Buffer.from(await file.arrayBuffer());
+      const validated = validateImageFile(bytes, file.type);
+      if ("error" in validated) continue;
+      const filepath = path.join(dir, validated.filename);
+      await writeFile(filepath, bytes);
       await prisma.postImage.create({
-        data: { postId: post.id, imageUrl: `/uploads/feed/${filename}` },
+        data: { postId: post.id, imageUrl: `/uploads/feed/${validated.filename}` },
       });
     }
   }
@@ -104,6 +106,19 @@ export async function addComment(formData: FormData) {
   const postId = (formData.get("postId") as string)?.trim();
   const content = (formData.get("content") as string)?.trim();
   if (!postId || !content) return { error: "Missing post or content" };
+
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { groupId: true },
+  });
+  if (!post) return { error: "Post not found" };
+  if (post.groupId) {
+    const member = await prisma.groupMember.findUnique({
+      where: { groupId_userId: { groupId: post.groupId, userId: session.userId } },
+    });
+    if (!member) return { error: "Not authorized to comment on this post" };
+  }
+
   await prisma.postComment.create({
     data: { postId, authorId: session.userId, content },
   });

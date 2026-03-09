@@ -1,10 +1,14 @@
 "use server";
 
 import { prisma } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 import { exportDataSchema, type ExportData } from "@/lib/validations";
 import { revalidatePath } from "next/cache";
 
 export async function getExportData(): Promise<ExportData> {
+  const session = await getSession();
+  if (!session) throw new Error("Not logged in");
+
   const people = await prisma.person.findMany({
     include: {
       phones: true,
@@ -59,6 +63,9 @@ export async function getExportData(): Promise<ExportData> {
 export type ImportMode = "replace" | "merge";
 
 export async function importData(json: string, mode: ImportMode): Promise<{ error?: string }> {
+  const session = await getSession();
+  if (!session?.isMaster) return { error: "Only the app owner can import data." };
+
   let data: unknown;
   try {
     data = JSON.parse(json);

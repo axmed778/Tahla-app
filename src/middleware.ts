@@ -3,10 +3,11 @@ import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
 const COOKIE_NAME = "tahla_session";
-const DEFAULT_SECRET = "tahla-default-secret-change-in-production";
 
 function getSecret(): string {
-  return process.env.TAHLA_COOKIE_SECRET ?? DEFAULT_SECRET;
+  const secret = process.env.TAHLA_COOKIE_SECRET;
+  if (!secret) throw new Error("TAHLA_COOKIE_SECRET env variable is not set");
+  return secret;
 }
 
 export async function middleware(request: NextRequest) {

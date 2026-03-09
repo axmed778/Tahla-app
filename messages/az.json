@@ -6,6 +6,7 @@
     "groups": "Qruplar",
     "events": "Tədbirlər",
     "familyTree": "Ailə ağacı",
+    "treeOverview": "Ağac baxışı",
     "friends": "Dostlar",
     "messages": "Mesajlar",
     "addPerson": "Şəxs əlavə et",
@@ -135,6 +136,9 @@
   },
   "tree": {
     "title": "Ailə ağacı",
+    "overviewTitle": "Ağac baxışı",
+    "overviewSubtitle": "İstənilən şəxsin ailə ağacına baxın. (Yalnız master.)",
+    "viewTree": "Ağaca bax",
     "privacyNotice": "Məxfilik: yalnız adlar göstərilir. Dost kimi baxırsınız.",
     "siblings": "Qardaş/bacılar",
     "parents": "Valideynlər",

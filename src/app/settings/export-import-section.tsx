@@ -10,16 +10,22 @@ export function ExportImportSection() {
   const [importError, setImportError] = useState<string | null>(null);
   const [importSuccess, setImportSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   async function handleExport() {
-    const data = await getExportData();
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    setExportError(null);
+    try {
+      const data = await getExportData();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = `tahla-export-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    } catch (err) {
+      setExportError(err instanceof Error ? err.message : "Export failed");
+    }
   }
 
   async function handleImport(e: React.ChangeEvent<HTMLInputElement>, mode: ImportMode) {
@@ -45,6 +51,7 @@ export function ExportImportSection() {
       <div>
         <Button onClick={handleExport} variant="outline">{t("settings.exportButton")}</Button>
         <p className="text-sm text-muted-foreground mt-1">{t("settings.exportHint")}</p>
+        {exportError && <p className="text-sm text-destructive mt-2">{exportError}</p>}
       </div>
       <div>
         <p className="text-sm font-medium mb-2">{t("settings.importTitle")}</p>

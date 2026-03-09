@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import { validateImageFile } from "@/lib/file-upload";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE = 5 * 1024 * 1024;
@@ -35,6 +36,7 @@ export async function getEventsForCurrentUser() {
 }
 
 export async function getEvent(id: string) {
+  const session = await getSession();
   const event = await prisma.event.findUnique({
     where: { id },
     include: {
@@ -46,6 +48,11 @@ export async function getEvent(id: string) {
       },
     },
   });
+  if (!event) return null;
+  if (!session) return null;
+  const isCreator = event.createdById === session.userId;
+  const isParticipant = event.participants.some((p) => p.userId === session.userId);
+  if (!isCreator && !isParticipant) return null;
   return event;
 }
 
@@ -63,13 +70,15 @@ export async function createEvent(formData: FormData) {
   let imageUrl: string | null = null;
   const photo = formData.get("photo") as File | null;
   if (photo?.size && photo.size <= MAX_SIZE && ALLOWED_TYPES.includes(photo.type)) {
-    const ext = photo.type === "image/jpeg" ? ".jpg" : photo.type === "image/png" ? ".png" : ".webp";
-    const dir = path.join(process.cwd(), "public", "uploads", "events");
-    await mkdir(dir, { recursive: true });
-    const filename = `event-${Date.now()}${ext}`;
-    const filepath = path.join(dir, filename);
-    await writeFile(filepath, Buffer.from(await photo.arrayBuffer()));
-    imageUrl = `/uploads/events/${filename}`;
+    const bytes = Buffer.from(await photo.arrayBuffer());
+    const validated = validateImageFile(bytes, photo.type);
+    if (!("error" in validated)) {
+      const dir = path.join(process.cwd(), "public", "uploads", "events");
+      await mkdir(dir, { recursive: true });
+      const filepath = path.join(dir, validated.filename);
+      await writeFile(filepath, bytes);
+      imageUrl = `/uploads/events/${validated.filename}`;
+    }
   }
 
   const event = await prisma.event.create({

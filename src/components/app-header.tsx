@@ -17,6 +17,7 @@ const NAV_LINKS = [
   { href: "/groups", key: "nav.groups" },
   { href: "/events", key: "nav.events" },
   { href: "/tree", key: "nav.familyTree" },
+  { href: "/tree/overview", key: "nav.treeOverview", masterOnly: true },
   { href: "/friends", key: "nav.friends" },
   { href: "/messages", key: "nav.messages" },
   { href: "/people/new", key: "nav.addPerson" },
@@ -109,7 +110,7 @@ export function AppHeader({ user }: { user: User | null }) {
           </Button>
         </div>
         <nav className="flex flex-col gap-0 p-2">
-          {NAV_LINKS.map(({ href, key }) => (
+          {NAV_LINKS.filter((link) => !("masterOnly" in link && link.masterOnly) || user?.isMaster).map(({ href, key }) => (
             <Link
               key={key}
               href={href}

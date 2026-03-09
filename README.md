@@ -25,7 +25,7 @@ A fast, offline-by-default family and relatives directory. Store details (locati
    Copy `.env.example` to `.env` and set:
 
    - `DATABASE_URL="file:./dev.db"` (default for SQLite)
-   - `TAHLA_COOKIE_SECRET` — optional; a long random string for signing the unlock cookie (defaults to a dev value if unset)
+   - `TAHLA_COOKIE_SECRET` — **required**; a long random string (at least 32 characters) for signing session cookies. The app will not start without it.
 
 3. **Database**
 
@@ -49,9 +49,6 @@ A fast, offline-by-default family and relatives directory. Store details (locati
    - Re-run all migrations
    - Run the seed script
 
-   **Master account (after seed):**
-   - **Email:** `master@example.com`
-   - **Password:** `master123`
 
    (You can also reset from the app: log in as master → Settings → “Reset app data”. Then register again; the first registered user becomes master.)
 

@@ -6,6 +6,7 @@ import { personQuickAddSchema, personFormSchema } from "@/lib/validations";
 import type { z } from "zod";
 import { writeFile, mkdir, unlink } from "fs/promises";
 import path from "path";
+import { validateImageFile } from "@/lib/file-upload";
 
 type PersonFormData = z.infer<typeof personFormSchema>;
 import { revalidatePath } from "next/cache";
@@ -15,6 +16,9 @@ const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
 export async function quickAddPerson(formData: FormData) {
+  const session = await getSession();
+  if (!session) return { error: { _form: ["Not logged in"] } };
+
   const parsed = personQuickAddSchema.safeParse({
     firstName: formData.get("firstName"),
     lastName: formData.get("lastName"),
@@ -80,6 +84,10 @@ export async function createPersonForCurrentUser(data: PersonFormData) {
 }
 
 export async function updatePerson(id: string, data: PersonFormData) {
+  const session = await getSession();
+  if (!session) return { error: { _form: ["Not logged in"] } };
+  if (!(await canEditPerson(id))) return { error: { _form: ["Not allowed to edit this profile"] } };
+
   const parsed = personFormSchema.safeParse(data);
   if (!parsed.success) {
     return { error: parsed.error.flatten().fieldErrors as Record<string, string[] | undefined> };
@@ -113,6 +121,23 @@ export async function updatePerson(id: string, data: PersonFormData) {
 }
 
 export async function deletePerson(id: string) {
+  const session = await getSession();
+  if (!session) return { error: "Not logged in" };
+
+  const person = await prisma.person.findUnique({
+    where: { id },
+    select: { userId: true },
+  });
+  if (!person) return { error: "Person not found" };
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { isMaster: true },
+  });
+  const isOwner = person.userId === session.userId;
+  const isMaster = user?.isMaster === true;
+  if (!isOwner && !isMaster) return { error: "Only the profile owner or app owner can delete this person" };
+
   await prisma.person.delete({ where: { id } });
   revalidatePath("/");
   redirect("/");
@@ -143,13 +168,15 @@ export async function uploadPersonPhoto(formData: FormData) {
   if (file.size > MAX_SIZE) return { error: "File too large (max 5MB)" };
   if (!ALLOWED_TYPES.includes(file.type)) return { error: "Only JPEG, PNG and WebP are allowed" };
 
-  const ext = file.type === "image/jpeg" ? ".jpg" : file.type === "image/png" ? ".png" : ".webp";
-  const filename = `${personId}-${Date.now()}${ext}`;
+  const bytes = Buffer.from(await file.arrayBuffer());
+  const validated = validateImageFile(bytes, file.type);
+  if ("error" in validated) return { error: validated.error };
+
+  const filename = validated.filename;
   const dir = path.join(process.cwd(), "public", "uploads", "avatars");
   await mkdir(dir, { recursive: true });
   const filepath = path.join(dir, filename);
-  const bytes = await file.arrayBuffer();
-  await writeFile(filepath, Buffer.from(bytes));
+  await writeFile(filepath, bytes);
 
   const photoUrl = `/uploads/avatars/${filename}`;
   await prisma.person.update({

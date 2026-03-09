@@ -15,10 +15,14 @@ import { deletePerson } from "@/actions/people";
 export function DeletePersonButton({ personId }: { personId: string }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleDelete() {
+    setError(null);
     setLoading(true);
-    await deletePerson(personId);
+    const result = await deletePerson(personId);
+    setLoading(false);
+    if (result?.error) setError(result.error);
   }
 
   return (
@@ -33,7 +37,8 @@ export function DeletePersonButton({ personId }: { personId: string }) {
             This will permanently delete this person and all their contact info, tags, and relationships. This cannot be undone.
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter>
+        <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          {error && <p className="text-sm text-destructive w-full sm:order-last sm:basis-full">{error}</p>}
           <Button variant="outline" onClick={() => setOpen(false)} disabled={loading}>
             Cancel
           </Button>

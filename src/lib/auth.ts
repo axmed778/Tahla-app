@@ -1,12 +1,14 @@
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
+import { prisma } from "@/lib/db";
 
 const COOKIE_NAME = "tahla_session";
 const TTL_HOURS = 24;
-const DEFAULT_SECRET = "tahla-default-secret-change-in-production";
 
 function getSecret(): string {
-  return process.env.TAHLA_COOKIE_SECRET ?? DEFAULT_SECRET;
+  const secret = process.env.TAHLA_COOKIE_SECRET;
+  if (!secret) throw new Error("TAHLA_COOKIE_SECRET env variable is not set");
+  return secret;
 }
 
 export type SessionPayload = { userId: string; isMaster: boolean };
@@ -35,9 +37,13 @@ export async function getSession(): Promise<SessionPayload | null> {
     const secret = new TextEncoder().encode(getSecret());
     const { payload } = await jwtVerify(token, secret);
     const userId = payload.userId as string;
-    const isMaster = payload.isMaster === true;
     if (!userId) return null;
-    return { userId, isMaster };
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { isMaster: true },
+    });
+    if (!user) return null;
+    return { userId, isMaster: user.isMaster };
   } catch {
     return null;
   }

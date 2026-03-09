@@ -79,7 +79,8 @@ export async function leaveGroup(formData: FormData) {
 }
 
 export async function getGroup(id: string) {
-  return prisma.group.findUnique({
+  const session = await getSession();
+  const group = await prisma.group.findUnique({
     where: { id },
     include: {
       createdBy: { select: { id: true, firstName: true, lastName: true } },
@@ -90,6 +91,11 @@ export async function getGroup(id: string) {
       },
     },
   });
+  if (!group) return null;
+  if (!session) return null;
+  const isMember = group.members.some((m) => m.userId === session.userId);
+  if (!isMember) return null;
+  return group;
 }
 
 export async function getCurrentUserRoleInGroup(groupId: string): Promise<"ADMIN" | "MEMBER" | null> {

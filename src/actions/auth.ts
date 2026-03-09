@@ -2,6 +2,8 @@
 
 import { prisma } from "@/lib/db";
 import { setSession, clearSession, getSession } from "@/lib/auth";
+import { unlink } from "fs/promises";
+import path from "path";
 import { loginSchema, registerSchema, changePasswordSchema, setPasswordByMasterSchema } from "@/lib/validations";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
@@ -23,7 +25,6 @@ export async function register(formData: FormData) {
   });
   if (existingByEmail) return { error: "This email is already registered." };
 
-  const isFirst = (await prisma.user.count()) === 0;
   const passwordHash = await bcrypt.hash(parsed.data.password, 10);
   const birthDateParsed = parsed.data.birthDate
     ? (() => {
@@ -31,15 +32,18 @@ export async function register(formData: FormData) {
         return new Date(y, m - 1, d);
       })()
     : null;
-  const user = await prisma.user.create({
-    data: {
-      email: parsed.data.email,
-      firstName: parsed.data.firstName,
-      lastName: parsed.data.lastName,
-      passwordHash,
-      birthDate: birthDateParsed,
-      isMaster: isFirst,
-    },
+  const user = await prisma.$transaction(async (tx) => {
+    const isFirst = (await tx.user.count()) === 0;
+    return tx.user.create({
+      data: {
+        email: parsed.data.email,
+        firstName: parsed.data.firstName,
+        lastName: parsed.data.lastName,
+        passwordHash,
+        birthDate: birthDateParsed,
+        isMaster: isFirst,
+      },
+    });
   });
   await setSession(user.id, user.isMaster);
   redirect("/profile/complete");
@@ -59,9 +63,15 @@ export async function login(formData: FormData) {
     where: { email: parsed.data.email },
     select: { id: true, isMaster: true, passwordHash: true, person: { select: { id: true } } },
   });
-  if (!user) return { error: "No account with this email." };
+  if (!user) {
+    await new Promise((res) => setTimeout(res, 500));
+    return { error: "Invalid email or password." };
+  }
   const ok = await bcrypt.compare(parsed.data.password, user.passwordHash);
-  if (!ok) return { error: "Wrong password." };
+  if (!ok) {
+    await new Promise((res) => setTimeout(res, 500));
+    return { error: "Invalid email or password." };
+  }
 
   await setSession(user.id, user.isMaster);
   if (!user.person?.id) redirect("/profile/complete");
@@ -189,11 +199,37 @@ export async function deleteUser(formData: FormData) {
     await clearSession();
   }
   await prisma.eventParticipant.deleteMany({ where: { userId } });
+  const eventsWithPhotos = await prisma.event.findMany({
+    where: { createdById: userId, imageUrl: { not: null } },
+    select: { imageUrl: true },
+  });
+  for (const e of eventsWithPhotos) {
+    if (e.imageUrl?.startsWith("/uploads/")) {
+      try {
+        await unlink(path.join(process.cwd(), "public", e.imageUrl));
+      } catch {
+        // ignore if file already missing
+      }
+    }
+  }
   await prisma.event.deleteMany({ where: { createdById: userId } });
+  const postImages = await prisma.postImage.findMany({
+    where: { post: { authorId: userId } },
+    select: { imageUrl: true },
+  });
+  for (const img of postImages) {
+    if (img.imageUrl.startsWith("/uploads/")) {
+      try {
+        await unlink(path.join(process.cwd(), "public", img.imageUrl));
+      } catch {
+        // ignore if file already missing
+      }
+    }
+  }
+  await prisma.post.deleteMany({ where: { authorId: userId } });
   await prisma.friendship.deleteMany({
     where: { OR: [{ userAId: userId }, { userBId: userId }] },
   });
-  await prisma.post.deleteMany({ where: { authorId: userId } });
   await prisma.person.updateMany({ where: { userId }, data: { userId: null } });
   await prisma.user.delete({ where: { id: userId } });
   if (isSelf) redirect("/lock");
@@ -220,9 +256,32 @@ export async function resetAppData() {
   if (!session?.isMaster) return { error: "Only the app owner can reset app data." };
   await clearSession();
   await prisma.eventParticipant.deleteMany({});
+  const allEventPhotos = await prisma.event.findMany({
+    where: { imageUrl: { not: null } },
+    select: { imageUrl: true },
+  });
+  for (const e of allEventPhotos) {
+    if (e.imageUrl?.startsWith("/uploads/")) {
+      try {
+        await unlink(path.join(process.cwd(), "public", e.imageUrl));
+      } catch {
+        // ignore
+      }
+    }
+  }
   await prisma.event.deleteMany({});
   await prisma.groupApplication.deleteMany({});
   await prisma.groupMember.deleteMany({});
+  const allPostImages = await prisma.postImage.findMany({ select: { imageUrl: true } });
+  for (const img of allPostImages) {
+    if (img.imageUrl.startsWith("/uploads/")) {
+      try {
+        await unlink(path.join(process.cwd(), "public", img.imageUrl));
+      } catch {
+        // ignore
+      }
+    }
+  }
   await prisma.post.deleteMany({});
   await prisma.group.deleteMany({});
   await prisma.friendship.deleteMany({});

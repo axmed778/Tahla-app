@@ -36,6 +36,7 @@ export function QuickAddForm({ tags }: { tags: Tag[] }) {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {error?._form?.[0] && <p className="text-sm text-destructive">{error._form[0]}</p>}
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="firstName">First name</Label>
