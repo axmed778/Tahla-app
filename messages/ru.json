@@ -109,6 +109,9 @@
     "viewFullTree": "Полное семейное древо",
     "backToDirectory": "В каталог",
     "language": "Язык",
+    "notifications": "Уведомления",
+    "notificationsEmpty": "Пока уведомлений нет.",
+    "notificationsMarkAllRead": "Отметить все как прочитанные",
     "menu": "Меню",
     "openMenu": "Открыть меню",
     "closeMenu": "Закрыть меню",
@@ -118,6 +121,17 @@
     "apply": "Применить",
     "previous": "Назад",
     "next": "Вперёд"
+  },
+  "notifications": {
+    "friendRequest": "{actor} отправил(а) вам заявку в друзья",
+    "newMessage": "{actor} отправил(а) вам сообщение",
+    "eventInvite": "Вас пригласили на {eventName}",
+    "groupApplicationApproved": "Ваша заявка в группу «{groupName}» одобрена",
+    "groupApplicationRejected": "Ваша заявка в группу «{groupName}» отклонена",
+    "groupApplicationReceived": "{actor} подал(а) заявку на вступление в «{groupName}»",
+    "feedComment": "{actor} прокомментировал(а) вашу запись",
+    "addedAsRelative": "{actor} добавил(а) вас в родственники",
+    "markAllRead": "Отметить все как прочитанные"
   },
   "directory": {
     "searchFilters": "Поиск и фильтры",

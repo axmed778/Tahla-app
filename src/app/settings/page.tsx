@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getCurrentUser, resetAppData } from "@/actions/auth";
+import { getCurrentUser, resetAppDataFormAction } from "@/actions/auth";
 import { AppHeader } from "@/components/app-header";
 import { getLocale, getT } from "@/lib/i18n";
 import { ChangePasswordForm } from "./change-password-form";
@@ -57,7 +57,7 @@ export default async function SettingsPage() {
           <section className="mb-8">
             <h3 className="font-medium mb-3 text-destructive">{t("settings.masterOnly")}</h3>
             <p className="text-sm text-muted-foreground mb-2">{t("settings.masterOnlyDesc")}</p>
-            <form action={resetAppData}>
+            <form action={resetAppDataFormAction}>
               <button type="submit" className="text-sm text-destructive underline">{t("settings.resetAppData")}</button>
             </form>
           </section>

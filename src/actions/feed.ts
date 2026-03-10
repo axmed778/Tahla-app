@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { POST_TYPES } from "@/lib/feed";
+import { createNotification } from "@/actions/notifications";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { validateImageFile } from "@/lib/file-upload";
@@ -74,7 +75,6 @@ export async function createPost(formData: FormData) {
   if (relatedPersonIds.length > 0) {
     await prisma.postRelatedPerson.createMany({
       data: relatedPersonIds.map((personId) => ({ postId: post.id, personId })),
-      skipDuplicates: true,
     });
   }
   const files = formData.getAll("photos") as File[];
@@ -109,7 +109,7 @@ export async function addComment(formData: FormData) {
 
   const post = await prisma.post.findUnique({
     where: { id: postId },
-    select: { groupId: true },
+    select: { groupId: true, authorId: true },
   });
   if (!post) return { error: "Post not found" };
   if (post.groupId) {
@@ -122,6 +122,12 @@ export async function addComment(formData: FormData) {
   await prisma.postComment.create({
     data: { postId, authorId: session.userId, content },
   });
+  if (post.authorId !== session.userId) {
+    await createNotification(post.authorId, "FEED_COMMENT", {
+      actorId: session.userId,
+      meta: { postId },
+    });
+  }
   revalidatePath("/feed");
   return { success: true };
 }

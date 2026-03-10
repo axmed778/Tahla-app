@@ -221,7 +221,7 @@ export function PersonForm({ personId, initial, tags, linkToCurrentUser }: Props
                 return <Input {...register("city")} placeholder={t("form.city")} />;
               }
               const currentCity = watch("city") || "";
-              const cityOptions = [...new Set([currentCity, ...cities].filter(Boolean))].sort();
+              const cityOptions = Array.from(new Set([currentCity, ...cities].filter(Boolean))).sort();
               return (
                 <Select
                   value={currentCity || "__none__"}

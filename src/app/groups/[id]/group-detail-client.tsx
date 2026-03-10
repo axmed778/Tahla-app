@@ -96,7 +96,7 @@ export function GroupDetailClient({
     <div className="flex flex-wrap items-center gap-2">
       {isMember && (
         <form
-          action={leaveGroup}
+          action={leaveGroup ? async (fd) => { await leaveGroup(fd); } : undefined}
           onSubmit={() => setLoading("leave")}
           className="inline"
         >
@@ -109,7 +109,7 @@ export function GroupDetailClient({
 
       {isAdmin && (
         <form
-          action={setGroupVisibility}
+          action={setGroupVisibility ? async (fd) => { await setGroupVisibility(fd); } : undefined}
           onSubmit={() => setLoading("visibility")}
           className="inline"
         >
@@ -138,7 +138,7 @@ export function GroupDetailClient({
       )}
 
       {!isMember && !isPrivate && joinGroup && (
-        <form action={joinGroup} onSubmit={() => setLoading("join")} className="inline">
+        <form action={joinGroup ? async (fd) => { await joinGroup(fd); } : undefined} onSubmit={() => setLoading("join")} className="inline">
           <input type="hidden" name="groupId" value={groupId} />
           <Button type="submit" size="sm" disabled={!!loading}>
             {t("groups.joinGroup")}

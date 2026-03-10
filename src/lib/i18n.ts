@@ -24,7 +24,7 @@ export function isValidLocale(value: string): value is Locale {
 export async function getLocale(): Promise<Locale> {
   const cookieStore = await cookies();
   const value = cookieStore.get(LOCALE_COOKIE)?.value;
-  return isValidLocale(value) ? value : DEFAULT_LOCALE;
+  return (value && isValidLocale(value)) ? value : DEFAULT_LOCALE;
 }
 
 export function getMessages(locale: Locale): Record<string, unknown> {

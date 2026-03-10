@@ -57,7 +57,7 @@ export async function getExportData(): Promise<ExportData> {
     people: peopleExport,
     tags: tagsExport,
     relationships: relationshipsExport,
-  };
+  } as ExportData;
 }
 
 export type ImportMode = "replace" | "merge";

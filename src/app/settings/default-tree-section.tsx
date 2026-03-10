@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { setDefaultTreePerson } from "@/actions/auth";
+import { setDefaultTreePersonFormAction } from "@/actions/auth";
 import { getLocale, getT } from "@/lib/i18n";
 import { formatPersonName } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ export async function DefaultTreeSection() {
     <section className="mb-8">
       <h3 className="font-medium mb-3">{t("users.defaultTreeRoot")}</h3>
       <p className="text-sm text-muted-foreground mb-2">{t("users.defaultTreeRootDesc")}</p>
-      <form action={setDefaultTreePerson} className="flex gap-2 items-end flex-wrap">
+      <form action={setDefaultTreePersonFormAction} className="flex gap-2 items-end flex-wrap">
         <select
           name="personId"
           className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm min-w-[200px]"

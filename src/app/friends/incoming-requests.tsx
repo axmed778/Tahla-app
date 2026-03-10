@@ -24,13 +24,13 @@ export function IncomingRequests({ requests }: { requests: Item[] }) {
               {user.firstName} {user.lastName}
             </span>
             <div className="flex gap-2">
-              <form action={declineFriendRequest}>
+              <form action={async (fd) => { await declineFriendRequest(fd); }}>
                 <input type="hidden" name="requestId" value={id} />
                 <Button type="submit" variant="ghost" size="sm">
                   {t("friends.decline")}
                 </Button>
               </form>
-              <form action={acceptFriendRequest}>
+              <form action={async (fd) => { await acceptFriendRequest(fd); }}>
                 <input type="hidden" name="requestId" value={id} />
                 <Button type="submit" size="sm">
                   {t("friends.accept")}

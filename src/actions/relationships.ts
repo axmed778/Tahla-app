@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { relationshipSchema } from "@/lib/validations";
 import { revalidatePath } from "next/cache";
+import { createNotification } from "@/actions/notifications";
 type RelationshipType = "PARENT" | "CHILD" | "SIBLING" | "SPOUSE" | "OTHER";
 
 const INVERSES: Record<RelationshipType, RelationshipType> = {
@@ -19,6 +20,7 @@ function normalizePair(a: string, b: string): [string, string] {
 }
 
 export async function addRelationship(fromPersonId: string, data: { toPersonId: string; type: RelationshipType; label?: string }) {
+  const session = await getSession();
   const parsed = relationshipSchema.safeParse(data);
   if (!parsed.success) {
     return { error: parsed.error.flatten().fieldErrors as Record<string, string[] | undefined> };
@@ -46,6 +48,19 @@ export async function addRelationship(fromPersonId: string, data: { toPersonId: 
     // SIBLING / SPOUSE / OTHER: symmetric, so swap from↔to and create inverse.
     await createPair(fromPersonId, toPersonId, type, label ?? null);
     await createPair(toPersonId, fromPersonId, inverse, label ?? null);
+  }
+
+  if (session) {
+    const toPerson = await prisma.person.findUnique({
+      where: { id: toPersonId },
+      select: { userId: true },
+    });
+    if (toPerson?.userId && toPerson.userId !== session.userId) {
+      await createNotification(toPerson.userId, "ADDED_AS_RELATIVE", {
+        actorId: session.userId,
+        meta: { personId: toPersonId },
+      });
+    }
   }
 
   revalidatePath(`/people/${fromPersonId}`);

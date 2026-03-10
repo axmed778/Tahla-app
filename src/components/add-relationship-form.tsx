@@ -46,7 +46,8 @@ export function AddRelationshipForm({ fromPersonId, otherPeople }: Props) {
     setLoading(true);
     const result = await addRelationship(fromPersonId, { toPersonId, type, label: label.trim() || undefined });
     if (result?.error) {
-      const msg = typeof result.error === "object" ? Object.values(result.error).flat()[0] : result.error;
+      const err = result.error;
+      const msg = typeof err === "object" ? Object.values(err).flat()[0] : err;
       setError(msg ?? "Error");
       setLoading(false);
       return;

@@ -96,7 +96,7 @@ export function NewEventForm({ users }: { users: User[] }) {
     setError(null);
     const form = e.currentTarget;
     const formData = new FormData(form);
-    formData.set("userIds", [...selectedIds].join(","));
+    formData.set("userIds", Array.from(selectedIds).join(","));
     const result = await createEvent(formData);
     if (result?.error) setError(result.error);
   }

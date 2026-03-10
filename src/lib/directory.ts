@@ -1,8 +1,14 @@
 import { prisma } from "@/lib/db";
-
 const PAGE_SIZE = 20;
 
 export type SortOption = "updatedAt" | "name";
+
+type PersonWhereInput = {
+  OR?: Array<Record<string, unknown>>;
+  city?: string;
+  maritalStatus?: string;
+  gender?: string;
+};
 
 export async function getDirectoryPeople(params: {
   q?: string;
@@ -15,7 +21,7 @@ export async function getDirectoryPeople(params: {
   const { q, city, maritalStatus, gender, sort = "updatedAt", page = 1 } = params;
   const skip = (page - 1) * PAGE_SIZE;
 
-  const where: Parameters<typeof prisma.person.findMany>[0]["where"] = {};
+  const where: PersonWhereInput = {};
 
   if (q?.trim()) {
     const term = q.trim();

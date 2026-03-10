@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { deleteUser } from "@/actions/auth";
+import { deleteUserFormAction } from "@/actions/auth";
 import { getLocale, getT } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { MasterSetPasswordDialog } from "./master-set-password-dialog";
@@ -51,7 +51,7 @@ export async function UsersSection({
                 />
               )}
               {isMaster && u.id !== currentUserId && !u.isMaster && (
-                <form action={deleteUser}>
+                <form action={deleteUserFormAction}>
                   <input type="hidden" name="userId" value={u.id} />
                   <Button type="submit" variant="ghost" size="sm" className="text-destructive">
                     {t("users.deleteUser")}
@@ -59,7 +59,7 @@ export async function UsersSection({
                 </form>
               )}
               {u.id === currentUserId && (
-                <form action={deleteUser}>
+                <form action={deleteUserFormAction}>
                   <input type="hidden" name="userId" value={u.id} />
                   <Button type="submit" variant="ghost" size="sm" className="text-destructive">
                     {t("users.deleteMyAccount")}

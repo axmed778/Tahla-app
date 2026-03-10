@@ -11,7 +11,8 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:seed": "npx tsx prisma/seed.ts",
-    "db:reset": "prisma migrate reset --force"
+    "db:reset": "prisma migrate reset --force",
+    "test:predeploy": "npx tsx scripts/predeploy-test.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",

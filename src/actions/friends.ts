@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { createNotification } from "@/actions/notifications";
 
 function orderedPair(a: string, b: string) {
   return a < b ? [a, b] : [b, a];
@@ -38,12 +39,12 @@ export async function getUsersNotFriends() {
     select: { fromUserId: true },
   });
   const excludeIds = new Set([
-    ...friendIds,
+    ...Array.from(friendIds),
     ...pendingFromMe.map((r) => r.toUserId),
     ...pendingToMe.map((r) => r.fromUserId),
   ]);
   const users = await prisma.user.findMany({
-    where: { id: { notIn: [...excludeIds] } },
+    where: { id: { notIn: Array.from(excludeIds) } },
     select: { id: true, firstName: true, lastName: true },
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
   });
@@ -98,10 +99,14 @@ export async function sendFriendRequest(formData: FormData) {
   if (reverseRequest?.status === "PENDING") {
     return { error: "They already sent you a request — accept it above" };
   }
-  await prisma.friendRequest.upsert({
+  const req = await prisma.friendRequest.upsert({
     where: { fromUserId_toUserId: { fromUserId: session.userId, toUserId } },
     create: { fromUserId: session.userId, toUserId, status: "PENDING" },
     update: { status: "PENDING" },
+  });
+  await createNotification(toUserId, "FRIEND_REQUEST", {
+    actorId: session.userId,
+    meta: { friendRequestId: req.id },
   });
   revalidatePath("/friends");
   return { success: true };

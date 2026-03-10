@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { createNotification } from "@/actions/notifications";
 
 export async function getGroupsForUser() {
   const session = await getSession();
@@ -148,6 +149,18 @@ export async function applyToJoinGroup(formData: FormData) {
   await prisma.groupApplication.create({
     data: { groupId, userId: session.userId, status: "PENDING" },
   });
+  const admins = await prisma.groupMember.findMany({
+    where: { groupId, role: "ADMIN" },
+    select: { userId: true },
+  });
+  for (const admin of admins) {
+    if (admin.userId !== session.userId) {
+      await createNotification(admin.userId, "GROUP_APPLICATION_RECEIVED", {
+        actorId: session.userId,
+        meta: { groupId, groupName: group.name },
+      });
+    }
+  }
   revalidatePath("/groups");
   revalidatePath(`/groups/${groupId}`);
   return { success: true };
@@ -168,6 +181,11 @@ export async function approveOrRejectApplication(formData: FormData) {
     where: { groupId_userId: { groupId, userId } },
   });
   if (!application || application.status !== "PENDING") return { error: "Application not found or already processed" };
+  const group = await prisma.group.findUnique({
+    where: { id: groupId },
+    select: { name: true },
+  });
+  const groupName = group?.name ?? "";
   if (action === "approve") {
     await prisma.groupApplication.update({
       where: { id: application.id },
@@ -176,10 +194,18 @@ export async function approveOrRejectApplication(formData: FormData) {
     await prisma.groupMember.create({
       data: { groupId, userId, role: "MEMBER" },
     });
+    await createNotification(userId, "GROUP_APPLICATION_APPROVED", {
+      actorId: session.userId,
+      meta: { groupId, groupName },
+    });
   } else {
     await prisma.groupApplication.update({
       where: { id: application.id },
       data: { status: "REJECTED" },
+    });
+    await createNotification(userId, "GROUP_APPLICATION_REJECTED", {
+      actorId: session.userId,
+      meta: { groupId, groupName },
     });
   }
   revalidatePath("/groups");

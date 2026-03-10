@@ -108,6 +108,11 @@ export async function getCurrentUser() {
   };
 }
 
+/** Stub: PIN lock / change PIN not yet implemented. */
+export async function changePin(_formData: FormData) {
+  return { error: "PIN lock is not configured." };
+}
+
 /** Users can only change their own password (no target userId; always session.userId). */
 export async function changePassword(formData: FormData) {
   const session = await getSession();
@@ -295,4 +300,17 @@ export async function resetAppData() {
   await prisma.settings.updateMany({ data: { defaultTreePersonId: null } });
   await prisma.user.deleteMany({});
   redirect("/lock");
+}
+
+/** Void-returning wrappers for use as form actions (so they serialize and satisfy React types). */
+export async function resetAppDataFormAction() {
+  await resetAppData();
+}
+
+export async function setDefaultTreePersonFormAction(formData: FormData) {
+  await setDefaultTreePerson(formData);
+}
+
+export async function deleteUserFormAction(formData: FormData) {
+  await deleteUser(formData);
 }

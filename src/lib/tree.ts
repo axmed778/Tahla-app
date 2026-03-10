@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 
-/** 3 generations: root, parents/children/spouse, then their parents/children (depth 0, 1, 2) */
-const MAX_DEPTH = 2;
+/** 4 generations: root (depth 0), parents (1), grandparents (2), great-grandparents (3) — for pro-style ancestor pyramid */
+const MAX_DEPTH = 3;
 
 type PersonNode = {
   id: string;
@@ -19,8 +19,8 @@ export async function buildTree(personId: string, depth = 0): Promise<PersonNode
   const person = await prisma.person.findUnique({
     where: { id: personId },
     include: {
-      relationshipsFrom: { include: { toPerson: true } },
-      relationshipsTo: { include: { fromPerson: true } },
+      relationshipsFrom: { include: { toPerson: true, fromPerson: true } },
+      relationshipsTo: { include: { fromPerson: true, toPerson: true } },
     },
   });
   if (!person) return null;

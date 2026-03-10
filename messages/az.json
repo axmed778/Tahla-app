@@ -109,6 +109,9 @@
     "viewFullTree": "Tam ailə ağacı",
     "backToDirectory": "Kataloqa qayıt",
     "language": "Dil",
+    "notifications": "Bildirişlər",
+    "notificationsEmpty": "Hələ bildiriş yoxdur.",
+    "notificationsMarkAllRead": "Hamısını oxunmuş kimi işarələ",
     "menu": "Menyu",
     "openMenu": "Menyunu aç",
     "closeMenu": "Menyunu bağla",
@@ -118,6 +121,17 @@
     "apply": "Tətbiq et",
     "previous": "Əvvəlki",
     "next": "Növbəti"
+  },
+  "notifications": {
+    "friendRequest": "{actor} sizə dostluq sorğusu göndərdi",
+    "newMessage": "{actor} sizə mesaj göndərdi",
+    "eventInvite": "Siz {eventName} tədbirinə dəvət edildiniz",
+    "groupApplicationApproved": "{groupName} qrupuna sorğunuz təsdiqləndi",
+    "groupApplicationRejected": "{groupName} qrupuna sorğunuz rədd edildi",
+    "groupApplicationReceived": "{actor} {groupName} qrupuna qoşulmaq üçün müraciət etdi",
+    "feedComment": "{actor} paylaşımınıza şərh yazdı",
+    "addedAsRelative": "{actor} sizi qohum kimi əlavə etdi",
+    "markAllRead": "Hamısını oxunmuş kimi işarələ"
   },
   "directory": {
     "searchFilters": "Axtarış və filtrlər",

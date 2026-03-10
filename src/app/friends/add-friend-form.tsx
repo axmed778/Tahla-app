@@ -29,7 +29,7 @@ export function AddFriendForm({ users }: { users: User[] }) {
           <span>
             {u.firstName} {u.lastName}
           </span>
-          <form action={sendFriendRequest}>
+          <form action={async (formData) => { await sendFriendRequest(formData); }}>
             <input type="hidden" name="userId" value={u.id} />
             <Button type="submit" size="sm" disabled={loading}>
               {t("friends.sendRequest")}

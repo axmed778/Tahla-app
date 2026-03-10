@@ -22,7 +22,7 @@ export function FriendsList({ friends }: { friends: Friend[] }) {
           <span>
             {friend.firstName} {friend.lastName}
           </span>
-          <form action={removeFriend}>
+          <form action={async (fd) => { await removeFriend(fd); }}>
             <input type="hidden" name="userId" value={friend.id} />
             <Button type="submit" variant="ghost" size="sm">
               {t("friends.remove")}

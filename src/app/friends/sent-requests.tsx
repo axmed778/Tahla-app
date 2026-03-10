@@ -22,7 +22,7 @@ export function SentRequests({ requests }: { requests: Item[] }) {
             <span>
               {user.firstName} {user.lastName}
             </span>
-            <form action={cancelFriendRequest}>
+            <form action={async (fd) => { await cancelFriendRequest(fd); }}>
               <input type="hidden" name="requestId" value={id} />
               <Button type="submit" variant="ghost" size="sm">
                 {t("friends.cancelRequest")}

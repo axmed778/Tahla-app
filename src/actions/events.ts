@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { validateImageFile } from "@/lib/file-upload";
+import { createNotification } from "@/actions/notifications";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE = 5 * 1024 * 1024;
@@ -90,13 +91,21 @@ export async function createEvent(formData: FormData) {
       createdById: session.userId,
     },
   });
-  const allUserIds = new Set([session.userId, ...userIds]);
+  const allUserIds = Array.from(new Set([session.userId, ...userIds]));
   for (const uid of allUserIds) {
     await prisma.eventParticipant.upsert({
       where: { eventId_userId: { eventId: event.id, userId: uid } },
       create: { eventId: event.id, userId: uid },
       update: {},
     });
+  }
+  for (const uid of userIds) {
+    if (uid !== session.userId) {
+      await createNotification(uid, "EVENT_INVITE", {
+        actorId: session.userId,
+        meta: { eventId: event.id, eventName: name },
+      });
+    }
   }
   revalidatePath("/events");
   redirect(`/events/${event.id}`);

@@ -109,6 +109,9 @@
     "viewFullTree": "View full tree",
     "backToDirectory": "Back to directory",
     "language": "Language",
+    "notifications": "Notifications",
+    "notificationsEmpty": "No notifications yet.",
+    "notificationsMarkAllRead": "Mark all as read",
     "menu": "Menu",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
@@ -118,6 +121,17 @@
     "apply": "Apply",
     "previous": "Previous",
     "next": "Next"
+  },
+  "notifications": {
+    "friendRequest": "{actor} sent you a friend request",
+    "newMessage": "{actor} sent you a message",
+    "eventInvite": "You were invited to {eventName}",
+    "groupApplicationApproved": "Your request to join {groupName} was approved",
+    "groupApplicationRejected": "Your request to join {groupName} was rejected",
+    "groupApplicationReceived": "{actor} applied to join {groupName}",
+    "feedComment": "{actor} commented on your post",
+    "addedAsRelative": "{actor} added you as a relative",
+    "markAllRead": "Mark all as read"
   },
   "directory": {
     "searchFilters": "Search & filters",

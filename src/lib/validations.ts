@@ -93,6 +93,8 @@ export const personFormSchema = z.object({
   tagIds: z.array(z.string().uuid()).default([]),
 });
 
+export type PersonFormData = z.infer<typeof personFormSchema>;
+
 export const relationshipSchema = z.object({
   toPersonId: z.string().uuid(),
   type: z.enum(["PARENT", "CHILD", "SIBLING", "SPOUSE", "OTHER"]),

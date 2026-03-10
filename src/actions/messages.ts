@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { createNotification } from "@/actions/notifications";
 
 export async function getConversations() {
   const session = await getSession();
@@ -100,9 +101,19 @@ export async function sendMessage(formData: FormData) {
     where: { conversationId_userId: { conversationId, userId: session.userId } },
   });
   if (!part) return { error: "Not in conversation" };
+  const otherParticipants = await prisma.conversationParticipant.findMany({
+    where: { conversationId, userId: { not: session.userId } },
+    select: { userId: true },
+  });
   await prisma.message.create({
     data: { conversationId, senderId: session.userId, content },
   });
+  for (const p of otherParticipants) {
+    await createNotification(p.userId, "NEW_MESSAGE", {
+      actorId: session.userId,
+      meta: { conversationId },
+    });
+  }
   revalidatePath("/messages");
   revalidatePath(`/messages/${conversationId}`);
   return { success: true };

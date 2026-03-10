@@ -18,8 +18,8 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
       phones: true,
       emails: true,
       tags: { include: { tag: true } },
-      relationshipsFrom: { include: { toPerson: true } },
-      relationshipsTo: { include: { fromPerson: true } },
+      relationshipsFrom: { include: { toPerson: true, fromPerson: true } },
+      relationshipsTo: { include: { fromPerson: true, toPerson: true } },
     },
   });
   if (!person) notFound();
