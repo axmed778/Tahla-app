@@ -1,0 +1,74 @@
+import { prisma } from "@/lib/db";
+
+/** 4 generations: root (depth 0), parents (1), grandparents (2), great-grandparents (3) — for pro-style ancestor pyramid */
+const MAX_DEPTH = 4;
+
+type PersonNode = {
+  id: string;
+  firstName: string;
+  middleName: string | null;
+  lastName: string;
+  parents: PersonNode[];
+  spouse: PersonNode | null;
+  children: PersonNode[];
+  siblings: PersonNode[];
+};
+
+export async function buildTree(personId: string, depth = 0, seen?: Set<string>): Promise<PersonNode | null> {
+  if (depth > MAX_DEPTH) return null;
+  const visited = seen ?? new Set<string>();
+  if (visited.has(personId)) return null;
+  visited.add(personId);
+  const person = await prisma.person.findUnique({
+    where: { id: personId },
+    include: {
+      relationshipsFrom: { include: { toPerson: true, fromPerson: true } },
+      relationshipsTo: { include: { fromPerson: true, toPerson: true } },
+    },
+  });
+  if (!person) return null;
+
+  const parents = person.relationshipsTo
+    .filter((r) => r.type === "PARENT")
+    .map((r) => r.fromPerson);
+  const children = person.relationshipsFrom
+    .filter((r) => r.type === "CHILD")
+    .map((r) => r.toPerson);
+  const spouseRel = person.relationshipsTo.find((r) => r.type === "SPOUSE")
+    ?? person.relationshipsFrom.find((r) => r.type === "SPOUSE");
+  const spouse = spouseRel
+    ? (person.relationshipsTo.some((r) => r.type === "SPOUSE") ? spouseRel.fromPerson : spouseRel.toPerson)
+    : null;
+  const siblings = person.relationshipsTo
+    .filter((r) => r.type === "SIBLING")
+    .map((r) => r.fromPerson);
+
+  const node: PersonNode = {
+    id: person.id,
+    firstName: person.firstName,
+    middleName: person.middleName ?? null,
+    lastName: person.lastName,
+    parents: [],
+    spouse: null,
+    children: [],
+    siblings: [],
+  };
+
+  const loadChild = async (p: { id: string }) => {
+    return buildTree(p.id, depth + 1, visited);
+  };
+
+  const [parentNodes, spouseNode, childNodes, siblingNodes] = await Promise.all([
+    Promise.all(parents.map((p) => loadChild(p))),
+    spouse ? loadChild(spouse) : Promise.resolve(null),
+    Promise.all(children.map((p) => loadChild(p))),
+    Promise.all(siblings.map((p) => loadChild(p))),
+  ]);
+
+  node.parents = parentNodes.filter((n): n is PersonNode => n != null);
+  node.spouse = spouseNode ?? null;
+  node.children = childNodes.filter((n): n is PersonNode => n != null);
+  node.siblings = siblingNodes.filter((n): n is PersonNode => n != null);
+
+  return node;
+}

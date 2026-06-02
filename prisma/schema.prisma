@@ -1,0 +1,416 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum VisibilityLevel {
+  EVERYONE
+  FRIENDS
+  FAMILY
+  ONLY_ME
+}
+
+enum RelationshipType {
+  PARENT
+  CHILD
+  SIBLING
+  SPOUSE
+  PARTNER
+  OTHER
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+model Settings {
+  id                  Int       @id @default(1)
+  pinHash             String?
+  defaultTreePersonId String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  firstName    String
+  lastName     String
+  passwordHash String
+  birthDate    DateTime?
+  isMaster     Boolean   @default(false)
+  emailVerified           Boolean    @default(true)
+  verifyTokenHash         String?
+  verifyTokenExpires      DateTime?
+  passwordResetTokenHash  String?
+  passwordResetExpires    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  person             Person?
+  friendshipsA       Friendship[] @relation("UserA")
+  friendshipsB       Friendship[] @relation("UserB")
+  friendRequestsSent    FriendRequest[] @relation("FriendRequestFrom")
+  friendRequestsReceived FriendRequest[] @relation("FriendRequestTo")
+  posts              Post[]
+  postComments       PostComment[]
+  createdEvents      Event[]      @relation("EventCreator")
+  eventParticipants  EventParticipant[]
+  conversationParticipants ConversationParticipant[]
+  messagesSent       Message[]
+  groupsCreated      Group[]
+  groupMembers       GroupMember[]
+  groupApplications  GroupApplication[]
+  notificationsReceived Notification[] @relation("NotificationRecipient")
+  notificationsSent     Notification[] @relation("NotificationActor")
+  sentRelationshipRequests     RelationshipRequest[] @relation("SentRelationshipRequests")
+  receivedRelationshipRequests RelationshipRequest[] @relation("ReceivedRelationshipRequests")
+
+  @@unique([firstName, lastName])
+  @@index([firstName, lastName])
+  @@index([email])
+}
+
+model RelationshipRequest {
+  id         String   @id @default(cuid())
+  fromUserId String
+  toUserId   String
+  type       RelationshipType
+  label      String?
+  status     RequestStatus @default(PENDING)
+  createdAt  DateTime @default(now())
+
+  fromUser User @relation("SentRelationshipRequests", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser   User @relation("ReceivedRelationshipRequests", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@index([fromUserId])
+  @@index([toUserId])
+  @@index([toUserId, status])
+  @@unique([fromUserId, toUserId, status])
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String
+  type      String
+  actorId   String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  meta      String?   // JSON string
+
+  user  User  @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  actor User? @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([userId, readAt])
+}
+
+model Person {
+  id           String    @id @default(uuid())
+  firstName    String
+  lastName     String
+  middleName   String?
+  gender       String
+  birthDate    DateTime?
+  deathDate    DateTime?
+  country      String?
+  city         String?
+  address      String?
+  occupation   String?
+  workplace    String?
+  maritalStatus String
+  notes        String?
+  photoUrl     String?
+  profileVisibility String @default("ALL") // ALL | FRIENDS | FIRST_GEN
+  userId       String?   @unique
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user         User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  phones       PersonPhone[]
+  emails       PersonEmail[]
+  privacySettings PersonPrivacySettings?
+  tags         PersonTag[]
+  relationshipsFrom Relationship[] @relation("FromPerson")
+  relationshipsTo   Relationship[] @relation("ToPerson")
+  postRelatedPeople PostRelatedPerson[]
+
+  @@index([lastName, firstName])
+  @@index([city])
+  @@index([userId])
+}
+
+model PersonPrivacySettings {
+  personId String @id
+  birthDateVisibility     VisibilityLevel @default(EVERYONE)
+  locationVisibility      VisibilityLevel @default(EVERYONE) // country/city/address
+  workVisibility          VisibilityLevel @default(EVERYONE) // occupation/workplace
+  maritalStatusVisibility VisibilityLevel @default(EVERYONE)
+  notesVisibility         VisibilityLevel @default(EVERYONE)
+
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+}
+
+model Friendship {
+  id       String   @id @default(uuid())
+  userAId  String
+  userBId  String
+  createdAt DateTime @default(now())
+
+  userA User @relation("UserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userB User @relation("UserB", fields: [userBId], references: [id], onDelete: Cascade)
+
+  @@unique([userAId, userBId])
+  @@index([userAId])
+  @@index([userBId])
+}
+
+model FriendRequest {
+  id        String   @id @default(uuid())
+  fromUserId String
+  toUserId   String
+  status    String   @default("PENDING") // PENDING, ACCEPTED, DECLINED
+  createdAt DateTime @default(now())
+
+  fromUser User @relation("FriendRequestFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser   User @relation("FriendRequestTo", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@unique([fromUserId, toUserId])
+  @@index([fromUserId])
+  @@index([toUserId])
+}
+
+model Post {
+  id        String   @id @default(uuid())
+  type      String   // MARRIAGE, NEW_WORKPLACE, DEATH, BIRTH, OTHER
+  content   String
+  authorId  String
+  groupId   String?
+  createdAt DateTime @default(now())
+
+  author         User                 @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  group          Group?              @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  relatedPeople  PostRelatedPerson[]
+  images         PostImage[]
+  comments       PostComment[]
+
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([groupId])
+}
+
+model PostImage {
+  id       String @id @default(uuid())
+  postId   String
+  imageUrl String
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+}
+
+model PostComment {
+  id        String   @id @default(uuid())
+  postId    String
+  authorId  String
+  content   String
+  createdAt DateTime @default(now())
+
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([authorId])
+}
+
+model PostRelatedPerson {
+  postId   String
+  personId String
+
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@id([postId, personId])
+  @@index([postId])
+  @@index([personId])
+}
+
+model Event {
+  id           String    @id @default(uuid())
+  name         String
+  date         DateTime
+  place        String?
+  imageUrl     String?
+  createdById  String
+  createdAt    DateTime  @default(now())
+
+  createdBy    User @relation("EventCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  participants EventParticipant[]
+
+  @@index([createdById])
+  @@index([date])
+}
+
+model EventParticipant {
+  id       String   @id @default(uuid())
+  eventId  String
+  userId   String
+  createdAt DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+}
+
+model PersonPhone {
+  id       String @id @default(uuid())
+  personId String
+  label    String?
+  number   String
+  visibility VisibilityLevel @default(EVERYONE)
+
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@index([number])
+  @@index([personId])
+}
+
+model PersonEmail {
+  id       String @id @default(uuid())
+  personId String
+  label    String?
+  email    String
+  visibility VisibilityLevel @default(EVERYONE)
+
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@index([email])
+  @@index([personId])
+}
+
+model Tag {
+  id   String @id @default(uuid())
+  name String @unique
+
+  people PersonTag[]
+}
+
+model PersonTag {
+  personId String
+  tagId    String
+
+  person Person @relation(fields: [personId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([personId, tagId])
+  @@unique([personId, tagId])
+  @@index([personId])
+  @@index([tagId])
+}
+
+model Conversation {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  participants ConversationParticipant[]
+  messages     Message[]
+}
+
+model ConversationParticipant {
+  id             String   @id @default(uuid())
+  conversationId String
+  userId         String
+  joinedAt       DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([conversationId])
+  @@index([userId])
+}
+
+model Message {
+  id             String   @id @default(uuid())
+  conversationId String
+  senderId      String
+  content       String
+  createdAt     DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([senderId])
+}
+
+model Group {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  isPrivate   Boolean  @default(false)
+  createdById String
+  createdAt   DateTime @default(now())
+
+  createdBy    User              @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  members      GroupMember[]
+  posts        Post[]
+  applications GroupApplication[]
+}
+
+model GroupMember {
+  id        String   @id @default(uuid())
+  groupId   String
+  userId    String
+  role      String   @default("MEMBER") // ADMIN | MEMBER
+  joinedAt  DateTime @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+}
+
+model GroupApplication {
+  id        String   @id @default(uuid())
+  groupId   String
+  userId    String
+  status    String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  createdAt DateTime @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+}
+
+model Relationship {
+  id          String         @id @default(uuid())
+  fromPersonId String
+  toPersonId   String
+  type        String
+  label       String?
+  createdAt   DateTime       @default(now())
+
+  fromPerson Person @relation("FromPerson", fields: [fromPersonId], references: [id], onDelete: Cascade)
+  toPerson   Person @relation("ToPerson", fields: [toPersonId], references: [id], onDelete: Cascade)
+
+  @@unique([fromPersonId, toPersonId, type])
+  @@index([fromPersonId])
+  @@index([toPersonId])
+}
+
+// SQLite does not support enums; values stored as strings (e.g. MALE, FEMALE, SINGLE, MARRIED, PARENT, CHILD, etc.)

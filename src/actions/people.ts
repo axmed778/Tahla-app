@@ -1,0 +1,278 @@
+"use server";
+
+import { prisma } from "@/lib/db";
+import { getSession } from "@/lib/auth";
+import { personQuickAddSchema, personFormSchema } from "@/lib/validations";
+import type { z } from "zod";
+import { deleteStoredImage, uploadImageToCloudinary } from "@/lib/file-upload";
+import { combinePhone } from "@/lib/phone-codes";
+
+type PersonFormData = z.infer<typeof personFormSchema>;
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+
+export async function quickAddPerson(formData: FormData) {
+  const session = await getSession();
+  if (!session) return { error: { _form: ["Not logged in"] } };
+
+  const parsed = personQuickAddSchema.safeParse({
+    firstName: formData.get("firstName"),
+    lastName: formData.get("lastName"),
+    phone: formData.get("phone") || undefined,
+    city: formData.get("city") || undefined,
+  });
+  if (!parsed.success) {
+    return { error: parsed.error.flatten().fieldErrors as Record<string, string[] | undefined> };
+  }
+  const { firstName, lastName, phone, city } = parsed.data;
+  const person = await prisma.person.create({
+    data: {
+      firstName,
+      lastName,
+      gender: "OTHER",
+      maritalStatus: "SINGLE",
+      ...(city && { city }),
+    },
+  });
+  await prisma.personPrivacySettings.upsert({
+    where: { personId: person.id },
+    create: { personId: person.id },
+    update: {},
+  });
+  if (phone?.trim()) {
+    await prisma.personPhone.create({
+      data: { personId: person.id, number: phone.trim() },
+    });
+  }
+  revalidatePath("/");
+  redirect(`/people/${person.id}`);
+}
+
+export async function createPerson(data: PersonFormData, linkUserId?: string) {
+  const session = await getSession();
+  if (!session) return { error: { _form: ["Not logged in"] } };
+  // Non-master callers may only link themselves; master may link any user.
+  if (linkUserId && linkUserId !== session.userId && !session.isMaster) {
+    return { error: { _form: ["Not allowed to link another user's profile"] } };
+  }
+  const parsed = personFormSchema.safeParse(data);
+  if (!parsed.success) {
+    return { error: parsed.error.flatten().fieldErrors as Record<string, string[] | undefined> };
+  }
+  const { phones, emails, tagIds, birthDate, deathDate, profileVisibility, privacy, ...rest } = parsed.data;
+  const person = await prisma.person.create({
+    data: {
+      ...rest,
+      birthDate: birthDate ? new Date(birthDate) : null,
+      deathDate: deathDate ? new Date(deathDate) : null,
+      profileVisibility: profileVisibility ?? "ALL",
+      ...(linkUserId && { userId: linkUserId }),
+      privacySettings: {
+        create: {
+          birthDateVisibility: privacy?.birthDate ?? "EVERYONE",
+          locationVisibility: privacy?.location ?? "EVERYONE",
+          workVisibility: privacy?.work ?? "EVERYONE",
+          maritalStatusVisibility: privacy?.maritalStatus ?? "EVERYONE",
+          notesVisibility: privacy?.notes ?? "EVERYONE",
+        },
+      },
+    },
+  });
+  for (const p of phones) {
+    await prisma.personPhone.create({
+      data: {
+        personId: person.id,
+        label: null,
+        number: combinePhone(p.dialCode, p.number),
+        visibility: p.visibility ?? "EVERYONE",
+      },
+    });
+  }
+  for (const e of emails) {
+    await prisma.personEmail.create({
+      data: {
+        personId: person.id,
+        label: e.label || null,
+        email: e.email,
+        visibility: e.visibility ?? "EVERYONE",
+      },
+    });
+  }
+  for (const tagId of tagIds) {
+    await prisma.personTag.create({ data: { personId: person.id, tagId } });
+  }
+  revalidatePath("/");
+  revalidatePath("/profile/complete");
+  redirect(`/people/${person.id}`);
+}
+
+/** Create a person and link to the current user (for profile/complete). */
+export async function createPersonForCurrentUser(data: PersonFormData) {
+  const session = await getSession();
+  if (!session) return { error: { _form: ["Not logged in"] } };
+  return createPerson(data, session.userId);
+}
+
+export async function updatePerson(id: string, data: PersonFormData) {
+  const session = await getSession();
+  if (!session) return { error: { _form: ["Not logged in"] } };
+  if (!(await canEditPerson(id))) return { error: { _form: ["Not allowed to edit this profile"] } };
+
+  const parsed = personFormSchema.safeParse(data);
+  if (!parsed.success) {
+    return { error: parsed.error.flatten().fieldErrors as Record<string, string[] | undefined> };
+  }
+  const { phones, emails, tagIds, birthDate, deathDate, profileVisibility, privacy, ...rest } = parsed.data;
+  await prisma.person.update({
+    where: { id },
+    data: {
+      ...rest,
+      birthDate: birthDate ? new Date(birthDate) : null,
+      deathDate: deathDate ? new Date(deathDate) : null,
+      ...(profileVisibility != null && { profileVisibility }),
+    },
+  });
+  await prisma.personPrivacySettings.upsert({
+    where: { personId: id },
+    create: {
+      personId: id,
+      birthDateVisibility: privacy?.birthDate ?? "EVERYONE",
+      locationVisibility: privacy?.location ?? "EVERYONE",
+      workVisibility: privacy?.work ?? "EVERYONE",
+      maritalStatusVisibility: privacy?.maritalStatus ?? "EVERYONE",
+      notesVisibility: privacy?.notes ?? "EVERYONE",
+    },
+    update: {
+      birthDateVisibility: privacy?.birthDate ?? "EVERYONE",
+      locationVisibility: privacy?.location ?? "EVERYONE",
+      workVisibility: privacy?.work ?? "EVERYONE",
+      maritalStatusVisibility: privacy?.maritalStatus ?? "EVERYONE",
+      notesVisibility: privacy?.notes ?? "EVERYONE",
+    },
+  });
+  await prisma.personPhone.deleteMany({ where: { personId: id } });
+  await prisma.personEmail.deleteMany({ where: { personId: id } });
+  await prisma.personTag.deleteMany({ where: { personId: id } });
+  for (const p of phones) {
+    await prisma.personPhone.create({
+      data: {
+        personId: id,
+        label: null,
+        number: combinePhone(p.dialCode, p.number),
+        visibility: p.visibility ?? "EVERYONE",
+      },
+    });
+  }
+  for (const e of emails) {
+    await prisma.personEmail.create({
+      data: {
+        personId: id,
+        label: e.label || null,
+        email: e.email,
+        visibility: e.visibility ?? "EVERYONE",
+      },
+    });
+  }
+  for (const tagId of tagIds) {
+    await prisma.personTag.create({ data: { personId: id, tagId } });
+  }
+  revalidatePath("/");
+  revalidatePath(`/people/${id}`);
+  revalidatePath(`/people/${id}/edit`);
+  return { success: true };
+}
+
+export async function deletePerson(id: string) {
+  const session = await getSession();
+  if (!session) return { error: "Not logged in" };
+
+  const person = await prisma.person.findUnique({
+    where: { id },
+    select: { userId: true, photoUrl: true },
+  });
+  if (!person) return { error: "Person not found" };
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { isMaster: true },
+  });
+  const isOwner = person.userId === session.userId;
+  const isMaster = user?.isMaster === true;
+  if (!isOwner && !isMaster) return { error: "Only the profile owner or app owner can delete this person" };
+
+  await deleteStoredImage(person.photoUrl);
+  await prisma.person.delete({ where: { id } });
+  revalidatePath("/");
+  redirect("/");
+}
+
+async function canEditPerson(personId: string) {
+  const session = await getSession();
+  if (!session) return false;
+  const person = await prisma.person.findUnique({
+    where: { id: personId },
+    select: { userId: true },
+  });
+  if (!person) return false;
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { isMaster: true },
+  });
+  return !!user && (person.userId === session.userId || user.isMaster);
+}
+
+export async function uploadPersonPhoto(formData: FormData) {
+  const personId = (formData.get("personId") as string)?.trim();
+  if (!personId) return { error: "Missing personId" };
+  if (!(await canEditPerson(personId))) return { error: "Not allowed to edit this profile" };
+
+  const file = formData.get("photo") as File | null;
+  if (!file || file.size === 0) return { error: "No file" };
+  if (file.size > MAX_SIZE) return { error: "File too large (max 5MB)" };
+  if (!ALLOWED_TYPES.includes(file.type)) return { error: "Only JPEG, PNG and WebP are allowed" };
+
+  const bytes = Buffer.from(await file.arrayBuffer());
+  const uploaded = await uploadImageToCloudinary(bytes, file.type, "avatars");
+  if ("error" in uploaded) return { error: uploaded.error };
+
+  const existing = await prisma.person.findUnique({
+    where: { id: personId },
+    select: { photoUrl: true },
+  });
+  await deleteStoredImage(existing?.photoUrl);
+
+  await prisma.person.update({
+    where: { id: personId },
+    data: { photoUrl: uploaded.url },
+  });
+
+  revalidatePath("/");
+  revalidatePath(`/people/${personId}`);
+  revalidatePath(`/people/${personId}/edit`);
+  return { success: true };
+}
+
+export async function removePersonPhoto(formData: FormData) {
+  const personId = (formData.get("personId") as string)?.trim();
+  if (!personId) return { error: "Missing personId" };
+  if (!(await canEditPerson(personId))) return { error: "Not allowed to edit this profile" };
+
+  const person = await prisma.person.findUnique({
+    where: { id: personId },
+    select: { photoUrl: true },
+  });
+  await deleteStoredImage(person?.photoUrl);
+
+  await prisma.person.update({
+    where: { id: personId },
+    data: { photoUrl: null },
+  });
+
+  revalidatePath("/");
+  revalidatePath(`/people/${personId}`);
+  revalidatePath(`/people/${personId}/edit`);
+  return { success: true };
+}
