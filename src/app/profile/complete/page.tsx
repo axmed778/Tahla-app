@@ -41,7 +41,7 @@ export default async function ProfileCompletePage() {
         <p className="text-muted-foreground text-sm mb-6">
           {t("profileComplete.subtitle")}
         </p>
-        <PersonForm initial={initial} tags={tags} linkToCurrentUser />
+        <PersonForm initial={initial} tags={tags} linkToCurrentUser onboarding />
       </main>
     </div>
   );

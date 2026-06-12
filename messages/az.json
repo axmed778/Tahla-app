@@ -262,6 +262,17 @@
     "title": "Profilinizi tamamlayın",
     "subtitle": "Ailə kataloqunda görünməyiniz və başqalarının sizinlə əlaqə qura bilməsi üçün məlumatlarınızı əlavə edin."
   },
+  "fatherCheck": {
+    "title": "Bu sizin atanızdır?",
+    "subtitle": "Ata adınız və soyadınıza əsasən nəslinizdə uyğun ata axtardıq.",
+    "none": "Nəslinizdə uyğun ata tapılmadı. Qohumları sonra profilinizdən əlaqələndirə bilərsiniz.",
+    "oneFound": "Nəslinizdə ehtimal olunan ata tapdıq.",
+    "manyFound": "Nəslinizdə bir neçə mümkün ata tapdıq. Düzgün olanı seçin.",
+    "surnameMatches": "Soyad uyğundur",
+    "confirm": "Bəli, bu mənim atamdır",
+    "skip": "İndilik keç",
+    "continue": "Davam et"
+  },
   "form": {
     "identity": "Şəxsiyyət",
     "firstName": "Ad",
