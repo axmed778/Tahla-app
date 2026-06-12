@@ -100,6 +100,25 @@ export const personQuickAddSchema = z.object({
   city: z.string().max(100).optional(),
 });
 
+/** Quick-add a deceased person and link them to an existing person in one step. */
+export const deceasedRelativeSchema = z.object({
+  firstName: z.string().trim().min(1, "First name required").max(100),
+  lastName: z.string().trim().min(1, "Last name required").max(100),
+  gender: z.enum(["MALE", "FEMALE", "OTHER"]),
+  birthDate: z
+    .string()
+    .optional()
+    .refine((s) => !s || /^\d{4}-\d{2}-\d{2}$/.test(s), { message: "Invalid date" }),
+  deathDate: z
+    .string()
+    .optional()
+    .refine((s) => !s || /^\d{4}-\d{2}-\d{2}$/.test(s), { message: "Invalid date" }),
+  /** Relationship of the deceased person to the existing person. */
+  relationship: z.enum(["PARENT", "CHILD", "SIBLING", "SPOUSE"]),
+});
+
+export type DeceasedRelativeData = z.infer<typeof deceasedRelativeSchema>;
+
 export const postContentSchema = z.string().min(1, "Content is required").max(5000, "Post must be under 5000 characters");
 export const commentContentSchema = z.string().min(1, "Content is required").max(1000, "Comment must be under 1000 characters");
 export const messageContentSchema = z.string().min(1, "Message is required").max(2000, "Message must be under 2000 characters");
