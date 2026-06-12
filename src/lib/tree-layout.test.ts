@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { layoutAncestorTree, type LayoutInput } from "./tree-layout";
+import {
+  layoutAncestorTree,
+  layoutDescendantTree,
+  type LayoutInput,
+  type DescendantLayoutInput,
+} from "./tree-layout";
 
 const opts = { nodeWidth: 100, nodeHeight: 40, hGap: 20, vGap: 60 };
 const colStep = 100 + 20;
@@ -93,6 +98,69 @@ describe("layoutAncestorTree", () => {
       ...opts,
       siblings: [{ id: "b1", label: "b1" }],
     });
+    expect(Math.min(...layout.nodes.map((n) => n.x))).toBe(0);
+    expect(Math.min(...layout.nodes.map((n) => n.y))).toBe(0);
+    expect(layout.width).toBe(Math.max(...layout.nodes.map((n) => n.x + n.width)));
+    expect(layout.height).toBe(Math.max(...layout.nodes.map((n) => n.y + n.height)));
+  });
+});
+
+function dnode(
+  id: string,
+  children: DescendantLayoutInput[] = [],
+  isFocus = false
+): DescendantLayoutInput {
+  return { id, label: id, isFocus, children };
+}
+
+describe("layoutDescendantTree", () => {
+  it("places a lone root at the origin", () => {
+    const layout = layoutDescendantTree(dnode("a"), opts);
+    expect(layout.nodes).toHaveLength(1);
+    expect(layout.nodes[0]).toMatchObject({ id: "a", x: 0, y: 0 });
+    expect(layout.edges).toHaveLength(0);
+  });
+
+  it("puts the root on top and children below, centered over them", () => {
+    const root = dnode("root", [dnode("c1"), dnode("c2")]);
+    const layout = layoutDescendantTree(root, opts);
+    const byId = new Map(layout.nodes.map((n) => [n.id, n]));
+    const r = byId.get("root")!;
+    const c1 = byId.get("c1")!;
+    const c2 = byId.get("c2")!;
+    expect(r.y).toBe(0);
+    expect(c1.y).toBe(rowStep);
+    expect(c2.y).toBe(rowStep);
+    expect(r.x).toBe((c1.x + c2.x) / 2);
+    expect(layout.edges).toHaveLength(2);
+  });
+
+  it("renders collateral branches (an ancestor's other child shows up)", () => {
+    // apex with two children; one of them is the focus's parent, the other is a great-uncle.
+    const root = dnode("apex", [
+      dnode("grandpaBrother", [dnode("cousin")]),
+      dnode("grandpa", [dnode("focus", [], true)]),
+    ]);
+    const layout = layoutDescendantTree(root, opts);
+    const ids = new Set(layout.nodes.map((n) => n.id));
+    // The collateral line (grandpa's brother + cousin) is present, not just the focus spine.
+    expect(ids.has("grandpaBrother")).toBe(true);
+    expect(ids.has("cousin")).toBe(true);
+    expect(layout.nodes.find((n) => n.id === "focus")!.kind).toBe("focus");
+  });
+
+  it("stacks generations downward by depth", () => {
+    const root = dnode("g0", [dnode("g1", [dnode("g2")])]);
+    const layout = layoutDescendantTree(root, opts);
+    const byId = new Map(layout.nodes.map((n) => [n.id, n]));
+    expect(byId.get("g0")!.y).toBe(0);
+    expect(byId.get("g1")!.y).toBe(rowStep);
+    expect(byId.get("g2")!.y).toBe(2 * rowStep);
+  });
+
+  it("normalizes coordinates to be non-negative and reports bounds", () => {
+    const root = dnode("root", [dnode("c1"), dnode("c2"), dnode("c3")]);
+    const layout = layoutDescendantTree(root, opts);
     expect(Math.min(...layout.nodes.map((n) => n.x))).toBe(0);
     expect(Math.min(...layout.nodes.map((n) => n.y))).toBe(0);
     expect(layout.width).toBe(Math.max(...layout.nodes.map((n) => n.x + n.width)));

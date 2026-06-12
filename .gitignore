@@ -34,6 +34,9 @@ prisma/dev.db-journal
 # user uploads (profile photos)
 /public/uploads/
 
+# local Claude Code settings
+.claude/settings.local.json
+
 # vercel
 .vercel
 

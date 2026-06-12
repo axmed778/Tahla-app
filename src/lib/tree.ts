@@ -3,133 +3,122 @@ import { prisma } from "@/lib/db";
 /** Ancestors are shown up to this many generations above the focus person. */
 export const MAX_ANCESTOR_LEVELS = 6;
 
-export type AncestorNode = {
+/** Descendants of the apical ancestor are expanded up to this many generations. */
+export const MAX_DESCENDANT_LEVELS = 12;
+
+export type FamilyTreeNode = {
   id: string;
   firstName: string;
   middleName: string | null;
   lastName: string;
-  /** Parents one generation up (father/mother, or however many are recorded). */
-  parents: AncestorNode[];
-  /** Spouse of the focus person (only populated on the focus node). */
-  spouse: AncestorNode | null;
-  /** Siblings of the focus person (only populated on the focus node). */
-  siblings: AncestorNode[];
-  /** True when the level cap was reached and this node still has parents to load. */
-  hasMoreAncestors: boolean;
+  /** True for the person the tree was opened for (highlighted in the UI). */
+  isFocus: boolean;
+  /** Children one generation down. */
+  children: FamilyTreeNode[];
+  /** True when the level cap was hit and this node still has children to load. */
+  hasMoreDescendants: boolean;
 };
 
-type Plain = { id: string; firstName: string; middleName: string | null; lastName: string };
+export type FamilyTree = {
+  /** Root of the tree: the apical (topmost) ancestor reachable from the focus. */
+  apex: FamilyTreeNode;
+  /** The person the tree was opened for. */
+  focus: { id: string; firstName: string; middleName: string | null; lastName: string };
+};
 
 /**
- * Build an upward (ancestor) tree rooted at the focus person. The focus node sits at the
- * bottom; parents recurse upward up to `maxLevels` generations. Spouse and siblings are
- * attached to the focus node only. Cycle-safe via a visited set; when the level cap is hit
- * and a node still has parents, `hasMoreAncestors` is set so the UI can offer to load more.
+ * Build the full family tree around `focusId`: walk up the parent chain to the apical
+ * ancestor, then expand that ancestor's complete descendant tree downward. This surfaces
+ * not just the focus's direct line and siblings but also collateral branches — e.g. a
+ * grandfather's brother and their descendants (cousins). Cycle-safe via a visited set;
+ * when the descendant cap is hit, `hasMoreDescendants` is set so the UI can indicate it.
  */
-export async function buildAncestorTree(
-  personId: string,
-  maxLevels = MAX_ANCESTOR_LEVELS
-): Promise<AncestorNode | null> {
-  const visited = new Set<string>();
-
-  const loadParents = async (id: string): Promise<Plain[]> => {
-    const rels = await prisma.relationship.findMany({
-      where: { toPersonId: id, type: "PARENT" },
-      select: {
-        fromPerson: { select: { id: true, firstName: true, middleName: true, lastName: true } },
-      },
-    });
-    return rels.map((r) => ({
-      id: r.fromPerson.id,
-      firstName: r.fromPerson.firstName,
-      middleName: r.fromPerson.middleName ?? null,
-      lastName: r.fromPerson.lastName,
-    }));
-  };
-
-  const buildUp = async (p: Plain, level: number): Promise<AncestorNode> => {
-    visited.add(p.id);
-    const parentRecords = await loadParents(p.id);
-    const unseen = parentRecords.filter((pr) => !visited.has(pr.id));
-
-    let parents: AncestorNode[] = [];
-    let hasMoreAncestors = false;
-    if (level >= maxLevels) {
-      hasMoreAncestors = unseen.length > 0;
-    } else {
-      parents = await Promise.all(unseen.map((pr) => buildUp(pr, level + 1)));
-    }
-
-    return {
-      id: p.id,
-      firstName: p.firstName,
-      middleName: p.middleName,
-      lastName: p.lastName,
-      parents,
-      spouse: null,
-      siblings: [],
-      hasMoreAncestors,
-    };
-  };
-
+export async function buildFamilyTree(
+  focusId: string,
+  maxUp = MAX_ANCESTOR_LEVELS,
+  maxDown = MAX_DESCENDANT_LEVELS
+): Promise<FamilyTree | null> {
   const focus = await prisma.person.findUnique({
-    where: { id: personId },
-    include: {
-      relationshipsFrom: { include: { toPerson: true } },
-      relationshipsTo: { include: { fromPerson: true } },
-    },
+    where: { id: focusId },
+    select: { id: true, firstName: true, middleName: true, lastName: true },
   });
   if (!focus) return null;
 
-  const spouseFromTo = focus.relationshipsTo.find((r) => r.type === "SPOUSE");
-  const spouseFromFrom = focus.relationshipsFrom.find((r) => r.type === "SPOUSE");
-  const spousePerson = spouseFromTo
-    ? spouseFromTo.fromPerson
-    : spouseFromFrom
-      ? spouseFromFrom.toPerson
-      : null;
+  // Walk up the parent chain (primary/oldest parent at each step) to the apical ancestor.
+  const seenUp = new Set<string>([focus.id]);
+  let apex: Plain = {
+    id: focus.id,
+    firstName: focus.firstName,
+    middleName: focus.middleName ?? null,
+    lastName: focus.lastName,
+  };
+  for (let i = 0; i < maxUp; i++) {
+    const rel = await prisma.relationship.findFirst({
+      where: { toPersonId: apex.id, type: "PARENT" },
+      select: {
+        fromPerson: { select: { id: true, firstName: true, middleName: true, lastName: true } },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+    if (!rel || seenUp.has(rel.fromPerson.id)) break;
+    seenUp.add(rel.fromPerson.id);
+    apex = {
+      id: rel.fromPerson.id,
+      firstName: rel.fromPerson.firstName,
+      middleName: rel.fromPerson.middleName ?? null,
+      lastName: rel.fromPerson.lastName,
+    };
+  }
 
-  const siblingPeople = focus.relationshipsTo
-    .filter((r) => r.type === "SIBLING")
-    .map((r) => r.fromPerson);
+  // Expand the apex's full descendant tree downward.
+  const visited = new Set<string>();
+  const buildDown = async (person: Plain, level: number): Promise<FamilyTreeNode> => {
+    visited.add(person.id);
+    const childRels = await prisma.relationship.findMany({
+      where: { fromPersonId: person.id, type: "CHILD" },
+      select: {
+        toPerson: { select: { id: true, firstName: true, middleName: true, lastName: true } },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+    const kids: Plain[] = childRels
+      .map((r) => ({
+        id: r.toPerson.id,
+        firstName: r.toPerson.firstName,
+        middleName: r.toPerson.middleName ?? null,
+        lastName: r.toPerson.lastName,
+      }))
+      .filter((c) => !visited.has(c.id));
 
-  const node = await buildUp(
-    {
+    let children: FamilyTreeNode[] = [];
+    let hasMoreDescendants = false;
+    if (level >= maxDown) {
+      hasMoreDescendants = kids.length > 0;
+    } else {
+      for (const c of kids) children.push(await buildDown(c, level + 1));
+    }
+
+    return {
+      id: person.id,
+      firstName: person.firstName,
+      middleName: person.middleName,
+      lastName: person.lastName,
+      isFocus: person.id === focus.id,
+      children,
+      hasMoreDescendants,
+    };
+  };
+
+  const apexNode = await buildDown(apex, 0);
+  return {
+    apex: apexNode,
+    focus: {
       id: focus.id,
       firstName: focus.firstName,
       middleName: focus.middleName ?? null,
       lastName: focus.lastName,
     },
-    0
-  );
-
-  const toLeaf = (p: Plain): AncestorNode => ({
-    id: p.id,
-    firstName: p.firstName,
-    middleName: p.middleName,
-    lastName: p.lastName,
-    parents: [],
-    spouse: null,
-    siblings: [],
-    hasMoreAncestors: false,
-  });
-
-  node.spouse = spousePerson
-    ? toLeaf({
-        id: spousePerson.id,
-        firstName: spousePerson.firstName,
-        middleName: spousePerson.middleName ?? null,
-        lastName: spousePerson.lastName,
-      })
-    : null;
-  node.siblings = siblingPeople.map((s) =>
-    toLeaf({
-      id: s.id,
-      firstName: s.firstName,
-      middleName: s.middleName ?? null,
-      lastName: s.lastName,
-    })
-  );
-
-  return node;
+  };
 }
+
+type Plain = { id: string; firstName: string; middleName: string | null; lastName: string };
