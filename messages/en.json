@@ -286,7 +286,19 @@
     "surnameMatches": "Surname matches",
     "confirm": "Yes, this is my father",
     "skip": "Skip for now",
-    "continue": "Continue"
+    "continue": "Continue",
+    "searchLabel": "Search for your father by name",
+    "searchHint": "Enter the name in Latin letters (e.g. Murad). The search works in Latin even for names stored in Cyrillic.",
+    "searchPlaceholder": "Father's name in Latin",
+    "searchButton": "Search",
+    "searchNoResults": "No one in your clan matched that name. Check the spelling or skip for now."
+  },
+  "deceased": {
+    "add": "Add deceased relative",
+    "title": "Add a deceased relative",
+    "description": "Quickly add a deceased person and link them to this profile (e.g. a late father to extend the tree).",
+    "relationship": "Relationship to this person",
+    "save": "Add and link"
   },
   "form": {
     "identity": "Identity",

@@ -4,6 +4,8 @@ import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { findFatherCandidates, type FatherCandidate } from "@/lib/father-match";
+import { latinNameMatches } from "@/lib/translit";
+import { surnamesMatch } from "@/lib/patronymic";
 import { createNotification } from "@/actions/notifications";
 
 export type FatherCandidateDTO = {
@@ -62,6 +64,46 @@ export async function getFatherCandidates(personId: string): Promise<FatherCandi
     lastName: c.lastName,
     surnameMatches: c.surnameMatches,
   }));
+}
+
+/**
+ * Manual parent search for account creation: the user types the father's given name in
+ * Latin and we search the clan for a matching male. Names stored in Cyrillic or with
+ * Azerbaijani diacritics are folded to a common Latin key before comparing, so a Latin
+ * query still finds them. Returns an empty list for short queries, no clan, or no match.
+ */
+export async function searchClanFathersByName(query: string): Promise<FatherCandidateDTO[]> {
+  const session = await getSession();
+  if (!session) return [];
+
+  const q = query.trim();
+  if (q.length < 2) return [];
+
+  const me = await prisma.person.findUnique({
+    where: { userId: session.userId },
+    select: { id: true, lastName: true, user: { select: { clanId: true } } },
+  });
+  if (!me) return [];
+  const clanId = me.user?.clanId;
+  if (!clanId) return [];
+
+  const clanPeople = await prisma.person.findMany({
+    where: { user: { clanId }, gender: "MALE" },
+    select: { id: true, firstName: true, lastName: true, middleName: true },
+  });
+
+  const matches = clanPeople
+    .filter((p) => p.id !== me.id && latinNameMatches(q, p.firstName))
+    .map((p) => ({
+      id: p.id,
+      firstName: p.firstName,
+      middleName: p.middleName ?? null,
+      lastName: p.lastName,
+      surnameMatches: surnamesMatch(p.lastName, me.lastName),
+    }));
+
+  // Surname agreement ranks higher, same as automatic detection.
+  return matches.sort((a, b) => Number(b.surnameMatches) - Number(a.surnameMatches));
 }
 
 /**

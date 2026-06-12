@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { getSession } from "@/lib/auth";
-import { personQuickAddSchema, personFormSchema } from "@/lib/validations";
+import { personQuickAddSchema, personFormSchema, deceasedRelativeSchema, type DeceasedRelativeData } from "@/lib/validations";
 import type { z } from "zod";
 import { deleteStoredImage, uploadImageToCloudinary } from "@/lib/file-upload";
 import { combinePhone } from "@/lib/phone-codes";
@@ -139,6 +139,83 @@ export async function createPersonForCurrentUserOnboarding(data: PersonFormData)
   const result = await createPersonRecord(data, session.userId);
   if ("error" in result) return result;
   redirect("/profile/father");
+}
+
+/**
+ * Quick-add a deceased person and link them to an existing person in a single step.
+ * Used to build the tree upward (e.g. add a deceased father/ancestor) without a full
+ * profile or a user account. The caller must be able to edit the existing person
+ * (its owner, or the app owner). Relationship edges mirror `addRelationship`.
+ */
+export async function addDeceasedRelative(
+  relativeOfPersonId: string,
+  data: DeceasedRelativeData
+): Promise<{ success: true; personId: string } | { error: string }> {
+  const session = await getSession();
+  if (!session) return { error: "Not logged in" };
+  if (!(await canEditPerson(relativeOfPersonId))) {
+    return { error: "Not allowed to add relatives to this profile." };
+  }
+  const parsed = deceasedRelativeSchema.safeParse(data);
+  if (!parsed.success) {
+    const flat = parsed.error.flatten().fieldErrors;
+    return {
+      error:
+        flat.firstName?.[0] ??
+        flat.lastName?.[0] ??
+        flat.gender?.[0] ??
+        flat.birthDate?.[0] ??
+        flat.deathDate?.[0] ??
+        flat.relationship?.[0] ??
+        "Invalid input",
+    };
+  }
+  const { firstName, lastName, gender, birthDate, deathDate, relationship } = parsed.data;
+
+  const existing = await prisma.person.findUnique({
+    where: { id: relativeOfPersonId },
+    select: { id: true },
+  });
+  if (!existing) return { error: "Person not found." };
+
+  const deceased = await prisma.person.create({
+    data: {
+      firstName,
+      lastName,
+      gender,
+      maritalStatus: "SINGLE",
+      birthDate: birthDate ? new Date(birthDate) : null,
+      deathDate: deathDate ? new Date(deathDate) : null,
+      profileVisibility: "ALL",
+      privacySettings: { create: {} },
+    },
+  });
+
+  const upsertEdge = async (fromPersonId: string, toPersonId: string, type: string) => {
+    await prisma.relationship.upsert({
+      where: { fromPersonId_toPersonId_type: { fromPersonId, toPersonId, type } },
+      create: { fromPersonId, toPersonId, type },
+      update: {},
+    });
+  };
+
+  // Resolve the parent/child direction, then store the same pair as PARENT and CHILD
+  // (mirroring confirmFather/addRelationship) so the tree reads both directions.
+  if (relationship === "PARENT" || relationship === "CHILD") {
+    const parentId = relationship === "PARENT" ? deceased.id : relativeOfPersonId;
+    const childId = relationship === "PARENT" ? relativeOfPersonId : deceased.id;
+    await upsertEdge(parentId, childId, "PARENT");
+    await upsertEdge(parentId, childId, "CHILD");
+  } else {
+    // SIBLING / SPOUSE are symmetric: store both directions with the same type.
+    await upsertEdge(relativeOfPersonId, deceased.id, relationship);
+    await upsertEdge(deceased.id, relativeOfPersonId, relationship);
+  }
+
+  revalidatePath("/");
+  revalidatePath(`/people/${relativeOfPersonId}`);
+  revalidatePath(`/people/${deceased.id}`);
+  return { success: true, personId: deceased.id };
 }
 
 export async function updatePerson(id: string, data: PersonFormData) {

@@ -286,7 +286,19 @@
     "surnameMatches": "Soyad uyğundur",
     "confirm": "Bəli, bu mənim atamdır",
     "skip": "İndilik keç",
-    "continue": "Davam et"
+    "continue": "Davam et",
+    "searchLabel": "Atanızı ada görə axtarın",
+    "searchHint": "Adı latın hərfləri ilə daxil edin (məs. Murad). Axtarış kiril əlifbası ilə saxlanan adlar üçün də latınla işləyir.",
+    "searchPlaceholder": "Atanın adı latınla",
+    "searchButton": "Axtar",
+    "searchNoResults": "Nəslinizdə bu ada uyğun heç kim tapılmadı. Yazılışı yoxlayın və ya keçin."
+  },
+  "deceased": {
+    "add": "Mərhum qohum əlavə et",
+    "title": "Mərhum qohum əlavə et",
+    "description": "Mərhum şəxsi tez əlavə edin və bu profilə bağlayın (məs. ağacı uzatmaq üçün mərhum ata).",
+    "relationship": "Bu şəxslə qohumluq",
+    "save": "Əlavə et və bağla"
   },
   "form": {
     "identity": "Şəxsiyyət",

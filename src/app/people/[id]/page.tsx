@@ -8,6 +8,7 @@ import { getAge, formatDate } from "@/lib/utils";
 import { PersonProfile } from "@/components/person-profile";
 import { MiniTree } from "@/components/mini-tree";
 import { AddRelationshipForm } from "@/components/add-relationship-form";
+import { AddDeceasedRelativeButton } from "@/components/add-deceased-relative-button";
 import { AddRelativeRequestButton } from "@/components/add-relative-request-button";
 
 export default async function PersonPage({ params }: { params: Promise<{ id: string }> }) {
@@ -147,8 +148,11 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           showMaritalStatus={showMaritalStatus}
           showNotes={showNotes}
         />
-        <section className="mt-6">
+        <section className="mt-6 flex flex-wrap gap-2">
           {user?.isMaster && <AddRelationshipForm fromPersonId={id} otherPeople={allPeople} />}
+          {canEdit && (
+            <AddDeceasedRelativeButton personId={id} defaultLastName={person.lastName} />
+          )}
         </section>
         <section className="mt-8">
           <h3 className="text-lg font-semibold mb-4">{t("profile.miniTreeView")}</h3>
