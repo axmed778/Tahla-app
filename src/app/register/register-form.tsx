@@ -6,6 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { register } from "@/actions/auth";
 import { useTranslations } from "@/components/i18n-provider";
+import type { ClanOption } from "@/actions/clans";
+
+const NEW_CLAN = "__new__";
 
 function isNextRedirectError(e: unknown): boolean {
   return (
@@ -17,10 +20,13 @@ function isNextRedirectError(e: unknown): boolean {
   );
 }
 
-export function RegisterForm() {
+export function RegisterForm({ clans }: { clans: ClanOption[] }) {
   const t = useTranslations();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [clanChoice, setClanChoice] = useState<string>("");
+
+  const creatingNewClan = clanChoice === NEW_CLAN;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -28,6 +34,12 @@ export function RegisterForm() {
     setLoading(true);
     try {
       const formData = new FormData(e.currentTarget);
+      // The clan <select> uses a sentinel value for "create new"; never send it as clanId.
+      if (creatingNewClan) {
+        formData.delete("clanId");
+      } else {
+        formData.delete("newClanName");
+      }
       const result = await register(formData);
       if (result && "error" in result && result.error) {
         setError(result.error);
@@ -85,6 +97,40 @@ export function RegisterForm() {
           autoComplete="bday"
         />
       </div>
+      <div className="space-y-2">
+        <Label htmlFor="clanId">{t("register.clan")}</Label>
+        <select
+          id="clanId"
+          name="clanId"
+          value={clanChoice}
+          onChange={(e) => setClanChoice(e.target.value)}
+          required
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          <option value="" disabled>
+            {t("register.clanSelect")}
+          </option>
+          {clans.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+          <option value={NEW_CLAN}>{t("register.clanCreateNew")}</option>
+        </select>
+      </div>
+      {creatingNewClan && (
+        <div className="space-y-2">
+          <Label htmlFor="newClanName">{t("register.clanNewName")}</Label>
+          <Input
+            id="newClanName"
+            name="newClanName"
+            type="text"
+            placeholder={t("register.clanNewNamePlaceholder")}
+            maxLength={100}
+            required
+          />
+        </div>
+      )}
       <div className="space-y-2">
         <Label htmlFor="password">{t("register.passwordMin")}</Label>
         <Input

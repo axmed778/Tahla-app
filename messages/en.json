@@ -56,7 +56,12 @@
     "duplicateEmail": "This email is already registered.",
     "duplicateName": "An account with this first and last name already exists. Try adding a middle name or initial.",
     "unexpectedError": "Something went wrong. Please try again.",
-    "dbUnavailable": "Cannot reach the database. Check DATABASE_URL on the server and that migrations have been applied."
+    "dbUnavailable": "Cannot reach the database. Check DATABASE_URL on the server and that migrations have been applied.",
+    "clan": "Family line (clan)",
+    "clanSelect": "Select your clan",
+    "clanCreateNew": "+ Create new clan",
+    "clanNewName": "New clan name",
+    "clanNewNamePlaceholder": "e.g. Məmmədli"
   },
   "feed": {
     "title": "Family feed",

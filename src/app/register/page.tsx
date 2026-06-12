@@ -1,15 +1,17 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/actions/auth";
+import { listClans } from "@/actions/clans";
 import { getLocale, getT } from "@/lib/i18n";
 import { AddUserForm } from "./add-user-form";
 import { RegisterForm } from "./register-form";
 import { LanguageSwitcher } from "@/components/language-switcher";
 
 export default async function RegisterPage() {
-  const [user, locale, t] = await Promise.all([
+  const [user, locale, t, clans] = await Promise.all([
     getCurrentUser(),
     getLocale(),
     getLocale().then((l) => getT(l)),
+    listClans(),
   ]);
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-muted/30 p-4">
@@ -28,7 +30,7 @@ export default async function RegisterPage() {
           )}
         </div>
         {!user ? (
-          <RegisterForm />
+          <RegisterForm clans={clans} />
         ) : user.isMaster ? (
           <AddUserForm />
         ) : (

@@ -41,6 +41,22 @@ export const registerSchema = z.object({
   lastName: nameSchema,
   password: passwordSchema,
   birthDate: registerBirthDateIsoSchema,
+  /** Existing clan id (when picking from the dropdown). */
+  clanId: z.string().uuid().optional(),
+  /** New clan name (when "Create new clan" is chosen). */
+  newClanName: z.string().trim().min(1).max(100).optional(),
+}).refine((d) => Boolean(d.clanId) || Boolean(d.newClanName), {
+  message: "Please select a clan or create a new one.",
+  path: ["clanId"],
+});
+
+/** Master "add user" form: same as register but without clan requirement. */
+export const addUserSchema = z.object({
+  email: emailSchema,
+  firstName: nameSchema,
+  lastName: nameSchema,
+  password: passwordSchema,
+  birthDate: registerBirthDateIsoSchema,
 });
 
 export const changePasswordSchema = z.object({

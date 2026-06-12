@@ -37,6 +37,19 @@ model Settings {
   updatedAt           DateTime  @updatedAt
 }
 
+/// Clan (family line / soy). Users select an existing clan or create a new one at registration.
+model Clan {
+  id        String   @id @default(uuid())
+  name      String
+  /// Lowercased, trimmed `name`; enforces case-insensitive uniqueness at the DB level.
+  nameNormalized String @unique
+  createdAt DateTime @default(now())
+
+  users User[]
+
+  @@index([nameNormalized])
+}
+
 model User {
   id           String    @id @default(uuid())
   email        String    @unique
@@ -45,6 +58,7 @@ model User {
   passwordHash String
   birthDate    DateTime?
   isMaster     Boolean   @default(false)
+  clanId       String?
   emailVerified           Boolean    @default(true)
   verifyTokenHash         String?
   verifyTokenExpires      DateTime?
@@ -53,6 +67,7 @@ model User {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
+  clan               Clan?     @relation(fields: [clanId], references: [id], onDelete: SetNull)
   person             Person?
   friendshipsA       Friendship[] @relation("UserA")
   friendshipsB       Friendship[] @relation("UserB")
@@ -75,6 +90,7 @@ model User {
   @@unique([firstName, lastName])
   @@index([firstName, lastName])
   @@index([email])
+  @@index([clanId])
 }
 
 model RelationshipRequest {

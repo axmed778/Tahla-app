@@ -56,7 +56,12 @@
     "duplicateEmail": "Bu email artıq qeydiyyatdan keçib.",
     "duplicateName": "Bu ad və soyadla hesab artıq var. Ata adı və ya baş hərf əlavə edin.",
     "unexpectedError": "Xəta baş verdi. Yenidən cəhd edin.",
-    "dbUnavailable": "Verilənlər bazasına qoşulmaq mümkün deyil. SERVER-də DATABASE_URL və migrasiyaları yoxlayın."
+    "dbUnavailable": "Verilənlər bazasına qoşulmaq mümkün deyil. SERVER-də DATABASE_URL və migrasiyaları yoxlayın.",
+    "clan": "Soy (nəsil)",
+    "clanSelect": "Soyunuzu seçin",
+    "clanCreateNew": "+ Yeni soy yarat",
+    "clanNewName": "Yeni soyun adı",
+    "clanNewNamePlaceholder": "məs. Məmmədli"
   },
   "feed": {
     "title": "Ailə xəbərləri",
