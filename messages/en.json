@@ -187,7 +187,12 @@
     "siblings": "Siblings",
     "parents": "Parents",
     "children": "Children",
-    "spouse": "Spouse"
+    "spouse": "Spouse",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "reset": "Reset",
+    "fit": "Fit",
+    "moreAncestors": "More ancestors above"
   },
   "addRelationship": {
     "title": "Add relationship",

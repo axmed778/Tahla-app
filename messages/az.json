@@ -187,7 +187,12 @@
     "siblings": "Qardaş/bacılar",
     "parents": "Valideynlər",
     "children": "Uşaqlar",
-    "spouse": "Həyat yoldaşı"
+    "spouse": "Həyat yoldaşı",
+    "zoomIn": "Yaxınlaşdır",
+    "zoomOut": "Uzaqlaşdır",
+    "reset": "Sıfırla",
+    "fit": "Sığdır",
+    "moreAncestors": "Yuxarıda daha çox əcdad"
   },
   "addRelationship": {
     "title": "Əlaqə əlavə et",

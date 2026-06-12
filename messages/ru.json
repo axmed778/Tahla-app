@@ -187,7 +187,12 @@
     "siblings": "Братья и сёстры",
     "parents": "Родители",
     "children": "Дети",
-    "spouse": "Супруг(а)"
+    "spouse": "Супруг(а)",
+    "zoomIn": "Приблизить",
+    "zoomOut": "Отдалить",
+    "reset": "Сброс",
+    "fit": "По размеру",
+    "moreAncestors": "Выше есть ещё предки"
   },
   "addRelationship": {
     "title": "Добавить связь",

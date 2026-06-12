@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/actions/auth";
 import { areFriends } from "@/actions/friends";
-import { buildTree } from "@/lib/tree";
+import { buildAncestorTree } from "@/lib/tree";
 import { prisma } from "@/lib/db";
 import { getLocale, getT } from "@/lib/i18n";
 import { AppHeader } from "@/components/app-header";
@@ -30,7 +30,7 @@ export default async function TreePage({ params }: { params: Promise<{ personId:
 
   const nameOnly = !isMaster && !isOwner;
 
-  const tree = await buildTree(personId);
+  const tree = await buildAncestorTree(personId);
   if (!tree) notFound();
 
   return (
