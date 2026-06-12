@@ -51,7 +51,14 @@ export async function quickAddPerson(formData: FormData) {
   redirect(`/people/${person.id}`);
 }
 
-export async function createPerson(data: PersonFormData, linkUserId?: string) {
+/**
+ * Create a Person record (with phones/emails/tags/privacy). Returns the new person id or
+ * a field-error object. Does NOT redirect, so callers can route as needed.
+ */
+async function createPersonRecord(
+  data: PersonFormData,
+  linkUserId?: string
+): Promise<{ personId: string } | { error: Record<string, string[] | undefined> }> {
   const session = await getSession();
   if (!session) return { error: { _form: ["Not logged in"] } };
   // Non-master callers may only link themselves; master may link any user.
@@ -106,7 +113,13 @@ export async function createPerson(data: PersonFormData, linkUserId?: string) {
   }
   revalidatePath("/");
   revalidatePath("/profile/complete");
-  redirect(`/people/${person.id}`);
+  return { personId: person.id };
+}
+
+export async function createPerson(data: PersonFormData, linkUserId?: string) {
+  const result = await createPersonRecord(data, linkUserId);
+  if ("error" in result) return result;
+  redirect(`/people/${result.personId}`);
 }
 
 /** Create a person and link to the current user (for profile/complete). */
@@ -114,6 +127,18 @@ export async function createPersonForCurrentUser(data: PersonFormData) {
   const session = await getSession();
   if (!session) return { error: { _form: ["Not logged in"] } };
   return createPerson(data, session.userId);
+}
+
+/**
+ * Onboarding variant: create the current user's person, then route to the father-detection
+ * step (/profile/father) instead of the person page.
+ */
+export async function createPersonForCurrentUserOnboarding(data: PersonFormData) {
+  const session = await getSession();
+  if (!session) return { error: { _form: ["Not logged in"] } };
+  const result = await createPersonRecord(data, session.userId);
+  if ("error" in result) return result;
+  redirect("/profile/father");
 }
 
 export async function updatePerson(id: string, data: PersonFormData) {

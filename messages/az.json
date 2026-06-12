@@ -56,7 +56,12 @@
     "duplicateEmail": "Bu email artıq qeydiyyatdan keçib.",
     "duplicateName": "Bu ad və soyadla hesab artıq var. Ata adı və ya baş hərf əlavə edin.",
     "unexpectedError": "Xəta baş verdi. Yenidən cəhd edin.",
-    "dbUnavailable": "Verilənlər bazasına qoşulmaq mümkün deyil. SERVER-də DATABASE_URL və migrasiyaları yoxlayın."
+    "dbUnavailable": "Verilənlər bazasına qoşulmaq mümkün deyil. SERVER-də DATABASE_URL və migrasiyaları yoxlayın.",
+    "clan": "Soy (nəsil)",
+    "clanSelect": "Soyunuzu seçin",
+    "clanCreateNew": "+ Yeni soy yarat",
+    "clanNewName": "Yeni soyun adı",
+    "clanNewNamePlaceholder": "məs. Məmmədli"
   },
   "feed": {
     "title": "Ailə xəbərləri",
@@ -182,7 +187,22 @@
     "siblings": "Qardaş/bacılar",
     "parents": "Valideynlər",
     "children": "Uşaqlar",
-    "spouse": "Həyat yoldaşı"
+    "spouse": "Həyat yoldaşı",
+    "zoomIn": "Yaxınlaşdır",
+    "zoomOut": "Uzaqlaşdır",
+    "reset": "Sıfırla",
+    "fit": "Sığdır",
+    "moreAncestors": "Yuxarıda daha çox əcdad"
+  },
+  "kinship": {
+    "findRelation": "Qohumluğu tap",
+    "selectPerson": "Şəxs seçin",
+    "find": "Tap",
+    "clear": "Təmizlə",
+    "relation": "Qohumluq",
+    "totalWeight": "Yol uzunluğu",
+    "commonAncestor": "Ortaq əcdad",
+    "noPath": "Bu şəxslər arasında qohumluq yolu tapılmadı."
   },
   "addRelationship": {
     "title": "Əlaqə əlavə et",
@@ -256,6 +276,17 @@
   "profileComplete": {
     "title": "Profilinizi tamamlayın",
     "subtitle": "Ailə kataloqunda görünməyiniz və başqalarının sizinlə əlaqə qura bilməsi üçün məlumatlarınızı əlavə edin."
+  },
+  "fatherCheck": {
+    "title": "Bu sizin atanızdır?",
+    "subtitle": "Ata adınız və soyadınıza əsasən nəslinizdə uyğun ata axtardıq.",
+    "none": "Nəslinizdə uyğun ata tapılmadı. Qohumları sonra profilinizdən əlaqələndirə bilərsiniz.",
+    "oneFound": "Nəslinizdə ehtimal olunan ata tapdıq.",
+    "manyFound": "Nəslinizdə bir neçə mümkün ata tapdıq. Düzgün olanı seçin.",
+    "surnameMatches": "Soyad uyğundur",
+    "confirm": "Bəli, bu mənim atamdır",
+    "skip": "İndilik keç",
+    "continue": "Davam et"
   },
   "form": {
     "identity": "Şəxsiyyət",

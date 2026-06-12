@@ -16,7 +16,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { createPerson, createPersonForCurrentUser, updatePerson } from "@/actions/people";
+import {
+  createPerson,
+  createPersonForCurrentUser,
+  createPersonForCurrentUserOnboarding,
+  updatePerson,
+} from "@/actions/people";
 import { useTranslations } from "@/components/i18n-provider";
 import { COUNTRIES, getCities } from "@/lib/locations";
 import { DEFAULT_DIAL_CODE, PHONE_DIAL_CODES } from "@/lib/phone-codes";
@@ -29,9 +34,11 @@ type Props = {
   tags: Tag[];
   /** When true and no personId, creates person linked to current user (profile/complete). */
   linkToCurrentUser?: boolean;
+  /** When true (with linkToCurrentUser), routes to the father-detection step after creation. */
+  onboarding?: boolean;
 };
 
-export function PersonForm({ personId, initial, tags, linkToCurrentUser }: Props) {
+export function PersonForm({ personId, initial, tags, linkToCurrentUser, onboarding }: Props) {
   const t = useTranslations();
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
@@ -105,13 +112,15 @@ export function PersonForm({ personId, initial, tags, linkToCurrentUser }: Props
       }
       router.push(`/people/${personId}`);
     } else if (linkToCurrentUser) {
-      const result = await createPersonForCurrentUser(cleaned);
+      const result = onboarding
+        ? await createPersonForCurrentUserOnboarding(cleaned)
+        : await createPersonForCurrentUser(cleaned);
       if (result?.error) {
         const first = Object.values(result.error).flat()[0];
         setServerError(first ?? "Error");
         return;
       }
-      // createPersonForCurrentUser redirects on success
+      // both actions redirect on success
     } else {
       await createPerson(cleaned);
     }

@@ -8,11 +8,13 @@ import { deleteStoredImage } from "@/lib/file-upload";
 import {
   loginSchema,
   registerSchema,
+  addUserSchema,
   changePasswordSchema,
   setPasswordByMasterSchema,
   forgotPasswordSchema,
   resetPasswordWithTokenSchema,
 } from "@/lib/validations";
+import { resolveClanForRegistration } from "@/actions/clans";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import bcrypt from "bcryptjs";
@@ -47,10 +49,12 @@ export async function register(formData: FormData) {
     lastName: (formData.get("lastName") ?? "").toString().trim(),
     password: formData.get("password") ?? "",
     birthDate: (formData.get("birthDate") as string)?.trim() || undefined,
+    clanId: (formData.get("clanId") as string)?.trim() || undefined,
+    newClanName: (formData.get("newClanName") as string)?.trim() || undefined,
   });
   if (!parsed.success) {
     const flat = parsed.error.flatten().fieldErrors;
-    return { error: flat.email?.[0] ?? flat.firstName?.[0] ?? flat.lastName?.[0] ?? flat.password?.[0] ?? flat.birthDate?.[0] ?? "Invalid input" };
+    return { error: flat.email?.[0] ?? flat.firstName?.[0] ?? flat.lastName?.[0] ?? flat.password?.[0] ?? flat.birthDate?.[0] ?? flat.clanId?.[0] ?? flat.newClanName?.[0] ?? "Invalid input" };
   }
 
   try {
@@ -59,6 +63,13 @@ export async function register(formData: FormData) {
       where: { email: normalizedEmail },
     });
     if (existingByEmail) return { error: t("register.duplicateEmail") };
+
+    const clanResult = await resolveClanForRegistration({
+      clanId: parsed.data.clanId,
+      newClanName: parsed.data.newClanName,
+    });
+    if ("error" in clanResult) return { error: clanResult.error };
+    const clanId = clanResult.clanId;
 
     const passwordHash = await bcrypt.hash(parsed.data.password, 10);
     const birthDateParsed = parsed.data.birthDate
@@ -82,6 +93,7 @@ export async function register(formData: FormData) {
             passwordHash,
             birthDate: birthDateParsed,
             isMaster: isFirst,
+            clanId,
             emailVerified: true,
           },
         });
@@ -102,6 +114,7 @@ export async function register(formData: FormData) {
         passwordHash,
         birthDate: birthDateParsed,
         isMaster: false,
+        clanId,
         emailVerified: false,
         verifyTokenHash: verifyHash,
         verifyTokenExpires: verifyExpires,
@@ -365,7 +378,7 @@ export async function setUserPasswordAsMaster(formData: FormData) {
 export async function addUser(formData: FormData) {
   const session = await getSession();
   if (!session?.isMaster) return { error: "Only the app owner can add users." };
-  const parsed = registerSchema.safeParse({
+  const parsed = addUserSchema.safeParse({
     email: (formData.get("email") ?? "").toString().trim().toLowerCase(),
     firstName: (formData.get("firstName") ?? "").toString().trim(),
     lastName: (formData.get("lastName") ?? "").toString().trim(),

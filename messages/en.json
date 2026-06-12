@@ -56,7 +56,12 @@
     "duplicateEmail": "This email is already registered.",
     "duplicateName": "An account with this first and last name already exists. Try adding a middle name or initial.",
     "unexpectedError": "Something went wrong. Please try again.",
-    "dbUnavailable": "Cannot reach the database. Check DATABASE_URL on the server and that migrations have been applied."
+    "dbUnavailable": "Cannot reach the database. Check DATABASE_URL on the server and that migrations have been applied.",
+    "clan": "Family line (clan)",
+    "clanSelect": "Select your clan",
+    "clanCreateNew": "+ Create new clan",
+    "clanNewName": "New clan name",
+    "clanNewNamePlaceholder": "e.g. Məmmədli"
   },
   "feed": {
     "title": "Family feed",
@@ -182,7 +187,22 @@
     "siblings": "Siblings",
     "parents": "Parents",
     "children": "Children",
-    "spouse": "Spouse"
+    "spouse": "Spouse",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "reset": "Reset",
+    "fit": "Fit",
+    "moreAncestors": "More ancestors above"
+  },
+  "kinship": {
+    "findRelation": "Find relation to",
+    "selectPerson": "Select a person",
+    "find": "Find",
+    "clear": "Clear",
+    "relation": "Relation",
+    "totalWeight": "Path length",
+    "commonAncestor": "Common ancestor",
+    "noPath": "No relationship path found between these people."
   },
   "addRelationship": {
     "title": "Add relationship",
@@ -256,6 +276,17 @@
   "profileComplete": {
     "title": "Complete your profile",
     "subtitle": "Add your details so you appear in the family directory and others can connect with you."
+  },
+  "fatherCheck": {
+    "title": "Is this your father?",
+    "subtitle": "Based on your patronymic and surname, we looked for a matching father in your clan.",
+    "none": "We couldn't find a matching father in your clan. You can link relatives later from your profile.",
+    "oneFound": "We found a likely father in your clan.",
+    "manyFound": "We found several possible fathers in your clan. Pick the correct one.",
+    "surnameMatches": "Surname matches",
+    "confirm": "Yes, this is my father",
+    "skip": "Skip for now",
+    "continue": "Continue"
   },
   "form": {
     "identity": "Identity",
