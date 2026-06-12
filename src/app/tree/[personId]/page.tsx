@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getCurrentUser } from "@/actions/auth";
 import { areFriends } from "@/actions/friends";
 import { buildAncestorTree } from "@/lib/tree";
+import { peopleForKinshipPicker } from "@/actions/kinship";
 import { prisma } from "@/lib/db";
 import { getLocale, getT } from "@/lib/i18n";
 import { AppHeader } from "@/components/app-header";
@@ -33,6 +34,8 @@ export default async function TreePage({ params }: { params: Promise<{ personId:
   const tree = await buildAncestorTree(personId);
   if (!tree) notFound();
 
+  const kinshipPeople = await peopleForKinshipPicker(personId);
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader user={user} />
@@ -51,7 +54,7 @@ export default async function TreePage({ params }: { params: Promise<{ personId:
             {t("tree.privacyNotice")}
           </p>
         )}
-        <TreeView node={tree} nameOnly={nameOnly} />
+        <TreeView node={tree} nameOnly={nameOnly} people={kinshipPeople} />
       </div>
     </div>
   );

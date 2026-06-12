@@ -194,6 +194,16 @@
     "fit": "Sığdır",
     "moreAncestors": "Yuxarıda daha çox əcdad"
   },
+  "kinship": {
+    "findRelation": "Qohumluğu tap",
+    "selectPerson": "Şəxs seçin",
+    "find": "Tap",
+    "clear": "Təmizlə",
+    "relation": "Qohumluq",
+    "totalWeight": "Yol uzunluğu",
+    "commonAncestor": "Ortaq əcdad",
+    "noPath": "Bu şəxslər arasında qohumluq yolu tapılmadı."
+  },
   "addRelationship": {
     "title": "Əlaqə əlavə et",
     "description": "Bu şəxsi başqası ilə əlaqələndirin. Əlaqə hər iki istiqamətdə saxlanılır.",

@@ -194,6 +194,16 @@
     "fit": "Fit",
     "moreAncestors": "More ancestors above"
   },
+  "kinship": {
+    "findRelation": "Find relation to",
+    "selectPerson": "Select a person",
+    "find": "Find",
+    "clear": "Clear",
+    "relation": "Relation",
+    "totalWeight": "Path length",
+    "commonAncestor": "Common ancestor",
+    "noPath": "No relationship path found between these people."
+  },
   "addRelationship": {
     "title": "Add relationship",
     "description": "Link this person to another. Relationship will be stored in both directions where applicable.",
