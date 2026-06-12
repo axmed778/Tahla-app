@@ -58,6 +58,35 @@ describe("layoutAncestorTree", () => {
     expect(b1.y).toBe(c.y);
   });
 
+  it("links siblings to the focus's father and centers the father over all children", () => {
+    const root = node("c", [node("dad")]);
+    const layout = layoutAncestorTree(root, {
+      ...opts,
+      siblings: [{ id: "b1", label: "b1" }, { id: "b2", label: "b2" }],
+    });
+    const byId = new Map(layout.nodes.map((n) => [n.id, n]));
+    const dad = byId.get("dad")!;
+    const c = byId.get("c")!;
+    const b1 = byId.get("b1")!;
+    const b2 = byId.get("b2")!;
+    // father has a parent edge to every child (focus + both siblings).
+    const parentEdges = layout.edges.filter((e) => e.type === "parent" && e.fromId === "dad");
+    expect(new Set(parentEdges.map((e) => e.toId))).toEqual(new Set(["c", "b1", "b2"]));
+    // father is one row above the children and centered over their average x.
+    expect(dad.y).toBe(0);
+    expect(c.y).toBe(rowStep);
+    expect(dad.x).toBe((b1.x + b2.x + c.x) / 3);
+  });
+
+  it("tags spouse edges with the spouse type", () => {
+    const layout = layoutAncestorTree(node("c"), {
+      ...opts,
+      spouse: { id: "s", label: "s" },
+    });
+    const spouseEdges = layout.edges.filter((e) => e.type === "spouse");
+    expect(spouseEdges).toEqual([{ fromId: "c", toId: "s", type: "spouse" }]);
+  });
+
   it("normalizes coordinates to be non-negative and reports bounds", () => {
     const root = node("c", [node("f"), node("m")]);
     const layout = layoutAncestorTree(root, {

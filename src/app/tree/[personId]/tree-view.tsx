@@ -31,6 +31,8 @@ type AncestorNode = {
 const PADDING = 40;
 const MIN_SCALE = 0.2;
 const MAX_SCALE = 2.5;
+const EDGE_COLOR = "#111827"; // neutral black for normal connectors
+const PATH_COLOR = "#dc2626"; // red for the requested kinship path
 
 function toLayoutInput(node: AncestorNode): LayoutInput {
   return {
@@ -254,30 +256,59 @@ export function TreeView({
               const b = nodeById.get(e.toId);
               if (!a || !b) return null;
               const onPath = pathEdgeKeys.has(edgeKey(e.fromId, e.toId));
-              const dim = highlighting && !onPath;
+              const stroke = onPath ? PATH_COLOR : EDGE_COLOR;
+              const strokeWidth = onPath ? 3 : 1.5;
+              const key = `${e.fromId}-${e.toId}`;
+
+              if (e.type === "spouse") {
+                // Horizontal connector between the focus and its spouse (same row).
+                const left = a.x < b.x ? a : b;
+                const right = a.x < b.x ? b : a;
+                const y = left.y + left.height / 2;
+                return (
+                  <line
+                    key={key}
+                    x1={left.x + left.width}
+                    y1={y}
+                    x2={right.x}
+                    y2={y}
+                    stroke={stroke}
+                    strokeWidth={strokeWidth}
+                    strokeLinecap="round"
+                  />
+                );
+              }
+
+              // Parent -> child elbow: leave the parent's bottom edge, run to a shared
+              // midline, then drop straight into the child's top edge.
+              const parent = a.y < b.y ? a : b;
+              const child = a.y < b.y ? b : a;
+              const px = parent.x + parent.width / 2;
+              const py = parent.y + parent.height;
+              const cx = child.x + child.width / 2;
+              const cy = child.y;
+              const midY = (py + cy) / 2;
               return (
-                <line
-                  key={`${e.fromId}-${e.toId}`}
-                  x1={a.x + a.width / 2}
-                  y1={a.y + a.height / 2}
-                  x2={b.x + b.width / 2}
-                  y2={b.y + b.height / 2}
-                  className={onPath ? "stroke-primary" : "stroke-muted-foreground/40"}
-                  strokeWidth={onPath ? 3 : 1.5}
-                  opacity={dim ? 0.2 : 1}
+                <path
+                  key={key}
+                  d={`M ${px} ${py} V ${midY} H ${cx} V ${cy}`}
+                  fill="none"
+                  stroke={stroke}
+                  strokeWidth={strokeWidth}
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
                 />
               );
             })}
             {layout.nodes.map((n) => {
-              const onPath = pathIds.has(n.id);
-              const dim = highlighting && !onPath;
-              const accent = highlighting && onPath;
+              const accent = highlighting && pathIds.has(n.id);
               return (
-                <foreignObject key={n.id} x={n.x} y={n.y} width={n.width} height={n.height} opacity={dim ? 0.25 : 1}>
+                <foreignObject key={n.id} x={n.x} y={n.y} width={n.width} height={n.height}>
                   <div
+                    style={accent ? { borderColor: PATH_COLOR } : undefined}
                     className={
                       accent
-                        ? "flex h-full w-full items-center justify-center rounded-xl border-2 border-primary bg-primary/25 px-3 text-center shadow"
+                        ? "flex h-full w-full items-center justify-center rounded-xl border-2 bg-background px-3 text-center shadow"
                         : n.kind === "focus"
                           ? "flex h-full w-full items-center justify-center rounded-xl border-2 border-primary bg-primary/15 px-3 text-center shadow-sm"
                           : n.kind === "spouse"

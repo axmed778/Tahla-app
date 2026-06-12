@@ -1,8 +1,9 @@
 /**
- * Pure layout for the bottom-up ancestor tree. The focus person sits at the bottom and
- * parents stack upward. Coordinates are computed with a post-order sweep so a node is
- * horizontally centered over its parents — this works for any number of parents (0..N)
- * and never overlaps siblings within a generation. No DOM / React here, so it is testable.
+ * Pure layout for the bottom-up ancestor tree. The focus person and its siblings sit in the
+ * bottom row; parents stack upward and are horizontally centered over all of their children
+ * (focus + siblings). Coordinates are computed generation by generation with a barycenter
+ * sweep, so a parent box always sits above the middle of its children regardless of how many
+ * children (1..N) it has. No DOM / React here, so it is testable.
  */
 
 export type LayoutNodeKind = "focus" | "ancestor" | "spouse" | "sibling";
@@ -26,7 +27,8 @@ export type PositionedNode = {
   hasMoreAncestors: boolean;
 };
 
-export type LayoutEdge = { fromId: string; toId: string };
+/** Parent edges run parent -> child (down); spouse edges run focus -> spouse (sideways). */
+export type LayoutEdge = { fromId: string; toId: string; type: "parent" | "spouse" };
 
 export type TreeLayout = {
   nodes: PositionedNode[];
@@ -42,98 +44,138 @@ export type LayoutOptions = {
   vGap?: number;
   /** Spouse of the focus node, placed to its right. */
   spouse?: { id: string; label: string } | null;
-  /** Siblings of the focus node, placed to its left. */
+  /** Siblings of the focus node, placed to its left and linked to the focus's parent(s). */
   siblings?: { id: string; label: string }[];
 };
 
 const DEFAULTS = { nodeWidth: 140, nodeHeight: 56, hGap: 28, vGap: 64 };
 
+type Tmp = {
+  id: string;
+  label: string;
+  kind: LayoutNodeKind;
+  depth: number;
+  hasMoreAncestors: boolean;
+  x: number;
+};
+
 /**
- * Compute positions for the focus node + its ancestors, plus optional spouse/siblings
- * placed in the focus row. Returns absolute, non-negative coordinates and the overall
- * bounding size so the caller can fit-to-view.
+ * Compute positions for the focus node + its ancestors, plus optional spouse/siblings.
+ * Returns absolute, non-negative coordinates and the overall bounding size so the caller
+ * can fit-to-view.
  */
 export function layoutAncestorTree(root: LayoutInput, options: LayoutOptions = {}): TreeLayout {
   const nodeWidth = options.nodeWidth ?? DEFAULTS.nodeWidth;
   const nodeHeight = options.nodeHeight ?? DEFAULTS.nodeHeight;
   const hGap = options.hGap ?? DEFAULTS.hGap;
   const vGap = options.vGap ?? DEFAULTS.vGap;
-
-  // First pass: assign a slot (column index) to every node via post-order over parents,
-  // and record each node's depth (0 = focus at the bottom).
-  type Tmp = { input: LayoutInput; depth: number; slot: number };
-  const tmp = new Map<string, Tmp>();
-  const edges: LayoutEdge[] = [];
-  let nextSlot = 0;
-  let maxDepth = 0;
-
-  const assign = (input: LayoutInput, depth: number): number => {
-    maxDepth = Math.max(maxDepth, depth);
-    let slot: number;
-    if (input.parents.length === 0) {
-      slot = nextSlot;
-      nextSlot += 1;
-    } else {
-      const parentSlots = input.parents.map((p) => {
-        edges.push({ fromId: p.id, toId: input.id });
-        return assign(p, depth + 1);
-      });
-      slot = parentSlots.reduce((a, b) => a + b, 0) / parentSlots.length;
-    }
-    tmp.set(input.id, { input, depth, slot });
-    return slot;
-  };
-  assign(root, 0);
-
   const colStep = nodeWidth + hGap;
   const rowStep = nodeHeight + vGap;
 
-  const nodes: PositionedNode[] = [];
-  for (const { input, depth, slot } of tmp.values()) {
-    nodes.push({
-      id: input.id,
-      label: input.label,
-      kind: input.id === root.id ? "focus" : "ancestor",
-      x: slot * colStep,
-      y: (maxDepth - depth) * rowStep,
-      width: nodeWidth,
-      height: nodeHeight,
-      hasMoreAncestors: input.hasMoreAncestors ?? false,
-    });
+  const tmp = new Map<string, Tmp>();
+  const childrenIds = new Map<string, string[]>();
+  const edges: LayoutEdge[] = [];
+  let maxDepth = 0;
+
+  const addChild = (parentId: string, childId: string) => {
+    const arr = childrenIds.get(parentId);
+    if (arr) arr.push(childId);
+    else childrenIds.set(parentId, [childId]);
+  };
+
+  // Walk the ancestor spine: record each node's depth and the parent -> child links.
+  const visit = (input: LayoutInput, depth: number): void => {
+    maxDepth = Math.max(maxDepth, depth);
+    if (!tmp.has(input.id)) {
+      tmp.set(input.id, {
+        id: input.id,
+        label: input.label,
+        kind: input.id === root.id ? "focus" : "ancestor",
+        depth,
+        hasMoreAncestors: input.hasMoreAncestors ?? false,
+        x: 0,
+      });
+    }
+    for (const p of input.parents) {
+      addChild(p.id, input.id);
+      edges.push({ fromId: p.id, toId: input.id, type: "parent" });
+      visit(p, depth + 1);
+    }
+  };
+  visit(root, 0);
+
+  // Siblings share the focus's direct parents and live in the bottom row.
+  const directParentIds = root.parents.map((p) => p.id);
+  const siblings = options.siblings ?? [];
+  for (const s of siblings) {
+    if (!tmp.has(s.id)) {
+      tmp.set(s.id, { id: s.id, label: s.label, kind: "sibling", depth: 0, hasMoreAncestors: false, x: 0 });
+    }
+    for (const pid of directParentIds) {
+      addChild(pid, s.id);
+      edges.push({ fromId: pid, toId: s.id, type: "parent" });
+    }
   }
 
-  // Place spouse to the right of the focus, siblings to the left, in the focus row.
-  const focus = tmp.get(root.id)!;
-  const focusX = focus.slot * colStep;
-  const focusY = maxDepth * rowStep;
-
+  // Spouse sits to the right of the focus and is linked only to the focus.
   if (options.spouse) {
-    nodes.push({
+    tmp.set(options.spouse.id, {
       id: options.spouse.id,
       label: options.spouse.label,
       kind: "spouse",
-      x: focusX + colStep,
-      y: focusY,
-      width: nodeWidth,
-      height: nodeHeight,
+      depth: 0,
       hasMoreAncestors: false,
+      x: 0,
     });
-    edges.push({ fromId: root.id, toId: options.spouse.id });
+    edges.push({ fromId: root.id, toId: options.spouse.id, type: "spouse" });
   }
 
-  const siblings = options.siblings ?? [];
-  siblings.forEach((s, i) => {
-    nodes.push({
-      id: s.id,
-      label: s.label,
-      kind: "sibling",
-      x: focusX - colStep * (i + 1),
-      y: focusY,
-      width: nodeWidth,
-      height: nodeHeight,
-      hasMoreAncestors: false,
-    });
+  // Bottom row (depth 0) order: siblings..., focus, spouse — assigned sequential columns.
+  const bottomOrder: string[] = [
+    ...siblings.map((s) => s.id),
+    root.id,
+    ...(options.spouse ? [options.spouse.id] : []),
+  ];
+  bottomOrder.forEach((id, i) => {
+    const n = tmp.get(id);
+    if (n) n.x = i * colStep;
   });
+
+  // Each higher generation: center every node over the average x of its children, then
+  // resolve same-row overlaps while keeping the generation centered over its children.
+  for (let depth = 1; depth <= maxDepth; depth++) {
+    const gen = [...tmp.values()].filter((n) => n.depth === depth);
+    if (gen.length === 0) continue;
+
+    for (const n of gen) {
+      const kids = childrenIds.get(n.id);
+      if (kids && kids.length > 0) {
+        const sum = kids.reduce((acc, id) => acc + (tmp.get(id)?.x ?? 0), 0);
+        n.x = sum / kids.length;
+      }
+    }
+
+    gen.sort((a, b) => a.x - b.x);
+    const meanBefore = gen.reduce((acc, n) => acc + n.x, 0) / gen.length;
+    for (let i = 1; i < gen.length; i++) {
+      const minX = gen[i - 1].x + colStep;
+      if (gen[i].x < minX) gen[i].x = minX;
+    }
+    const meanAfter = gen.reduce((acc, n) => acc + n.x, 0) / gen.length;
+    const shift = meanBefore - meanAfter;
+    if (shift !== 0) for (const n of gen) n.x += shift;
+  }
+
+  const nodes: PositionedNode[] = [...tmp.values()].map((n) => ({
+    id: n.id,
+    label: n.label,
+    kind: n.kind,
+    x: n.x,
+    y: (maxDepth - n.depth) * rowStep,
+    width: nodeWidth,
+    height: nodeHeight,
+    hasMoreAncestors: n.hasMoreAncestors,
+  }));
 
   // Normalize to non-negative coordinates and compute the bounding box.
   const minX = Math.min(...nodes.map((n) => n.x));
