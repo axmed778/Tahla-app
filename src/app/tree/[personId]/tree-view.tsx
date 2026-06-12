@@ -7,8 +7,8 @@ import { zoom, zoomIdentity, type ZoomBehavior } from "d3-zoom";
 import { useTranslations } from "@/components/i18n-provider";
 import { formatPersonName } from "@/lib/utils";
 import {
-  layoutAncestorTree,
-  type LayoutInput,
+  layoutDescendantTree,
+  type DescendantLayoutInput,
   type PositionedNode,
 } from "@/lib/tree-layout";
 import {
@@ -17,16 +17,17 @@ import {
   type KinshipPersonDTO,
 } from "@/actions/kinship";
 
-type AncestorNode = {
+type FamilyNode = {
   id: string;
   firstName: string;
   middleName: string | null;
   lastName: string;
-  parents: AncestorNode[];
-  spouse: AncestorNode | null;
-  siblings: AncestorNode[];
-  hasMoreAncestors: boolean;
+  isFocus: boolean;
+  children: FamilyNode[];
+  hasMoreDescendants: boolean;
 };
+
+type Focus = { id: string; firstName: string; middleName: string | null; lastName: string };
 
 const PADDING = 40;
 const MIN_SCALE = 0.2;
@@ -34,12 +35,13 @@ const MAX_SCALE = 2.5;
 const EDGE_COLOR = "#111827"; // neutral black for normal connectors
 const PATH_COLOR = "#dc2626"; // red for the requested kinship path
 
-function toLayoutInput(node: AncestorNode): LayoutInput {
+function toLayoutInput(node: FamilyNode): DescendantLayoutInput {
   return {
     id: node.id,
     label: formatPersonName(node),
-    hasMoreAncestors: node.hasMoreAncestors,
-    parents: node.parents.map(toLayoutInput),
+    isFocus: node.isFocus,
+    hasMoreDescendants: node.hasMoreDescendants,
+    children: node.children.map(toLayoutInput),
   };
 }
 
@@ -48,11 +50,13 @@ function edgeKey(a: string, b: string): string {
 }
 
 export function TreeView({
-  node,
+  tree,
+  focus,
   nameOnly,
   people,
 }: {
-  node: AncestorNode;
+  tree: FamilyNode;
+  focus: Focus;
   nameOnly: boolean;
   people: KinshipPersonDTO[];
 }) {
@@ -67,11 +71,8 @@ export function TreeView({
   const [finding, setFinding] = useState(false);
 
   const layout = useMemo(() => {
-    return layoutAncestorTree(toLayoutInput(node), {
-      spouse: node.spouse ? { id: node.spouse.id, label: formatPersonName(node.spouse) } : null,
-      siblings: node.siblings.map((s) => ({ id: s.id, label: formatPersonName(s) })),
-    });
-  }, [node]);
+    return layoutDescendantTree(toLayoutInput(tree));
+  }, [tree]);
 
   const nodeById = useMemo(() => {
     const map = new Map<string, PositionedNode>();
@@ -136,7 +137,7 @@ export function TreeView({
     setFinding(true);
     setKinError(null);
     setResult(null);
-    const res = await findKinshipPath(node.id, otherId);
+    const res = await findKinshipPath(focus.id, otherId);
     if ("error" in res) {
       setKinError(res.error);
     } else {

@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/actions/auth";
 import { areFriends } from "@/actions/friends";
-import { buildAncestorTree } from "@/lib/tree";
+import { buildFamilyTree } from "@/lib/tree";
 import { peopleForKinshipPicker } from "@/actions/kinship";
 import { prisma } from "@/lib/db";
 import { getLocale, getT } from "@/lib/i18n";
@@ -17,7 +17,7 @@ export default async function TreePage({ params }: { params: Promise<{ personId:
 
   const person = await prisma.person.findUnique({
     where: { id: personId },
-    select: { id: true, firstName: true, lastName: true, userId: true },
+    select: { id: true, firstName: true, middleName: true, lastName: true, userId: true },
   });
   if (!person) notFound();
 
@@ -31,7 +31,7 @@ export default async function TreePage({ params }: { params: Promise<{ personId:
 
   const nameOnly = !isMaster && !isOwner;
 
-  const tree = await buildAncestorTree(personId);
+  const tree = await buildFamilyTree(personId);
   if (!tree) notFound();
 
   const kinshipPeople = await peopleForKinshipPicker(personId);
@@ -47,14 +47,14 @@ export default async function TreePage({ params }: { params: Promise<{ personId:
           ← {t("common.backToDirectory")}
         </Link>
         <h1 className="text-2xl font-bold mb-2">
-          {t("tree.title")}: {formatPersonName(tree)}
+          {t("tree.title")}: {formatPersonName(person)}
         </h1>
         {nameOnly && (
           <p className="text-sm text-muted-foreground mb-6">
             {t("tree.privacyNotice")}
           </p>
         )}
-        <TreeView node={tree} nameOnly={nameOnly} people={kinshipPeople} />
+        <TreeView tree={tree.apex} focus={tree.focus} nameOnly={nameOnly} people={kinshipPeople} />
       </div>
     </div>
   );
