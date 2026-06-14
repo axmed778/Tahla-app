@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Person, PersonPhone, PersonEmail, PersonTag, Tag, Relationship } from "@prisma/client";
 import { formatPersonName } from "@/lib/utils";
+import type { Locale } from "@/lib/i18n-config";
 import { RemoveRelationshipButton } from "@/components/remove-relationship-button";
 import { ImageLightbox } from "@/components/image-lightbox";
 import { translateGender, translateMaritalStatus } from "@/lib/enum-labels";
@@ -25,6 +26,7 @@ type Props = {
   spouse: Person | null;
   other: { person: Person; label: string | null; fromPersonId: string; toPersonId: string }[];
   t: TranslateFn;
+  locale: Locale;
   /** Can edit this profile (owner or master). */
   canEdit?: boolean;
   /** Current user's person id — user can remove any relationship that involves their profile. */
@@ -38,8 +40,8 @@ type Props = {
   showNotes?: boolean;
 };
 
-export function PersonProfile({ person, age, formatDate, parents, children, siblings, spouse, other, t, canEdit, currentUserPersonId, showContact = true, showBirthDate = true, showLocation = true, showWork = true, showMaritalStatus = true, showNotes = true }: Props) {
-  const currentName = formatPersonName(person);
+export function PersonProfile({ person, age, formatDate, parents, children, siblings, spouse, other, t, locale, canEdit, currentUserPersonId, showContact = true, showBirthDate = true, showLocation = true, showWork = true, showMaritalStatus = true, showNotes = true }: Props) {
+  const currentName = formatPersonName(person, locale);
   const canRemove = (relatedPersonId: string) => !!canEdit || (!!currentUserPersonId && relatedPersonId === currentUserPersonId);
   const photoUrl = (person as { photoUrl?: string | null }).photoUrl;
   return (
@@ -53,7 +55,7 @@ export function PersonProfile({ person, age, formatDate, parents, children, sibl
         )}
         <div>
         <h2 className="text-2xl font-bold">
-          {formatPersonName(person)}
+          {formatPersonName(person, locale)}
         </h2>
         {person.tags.length > 0 && (
           <div className="mt-1 flex flex-wrap gap-1">
@@ -147,7 +149,7 @@ export function PersonProfile({ person, age, formatDate, parents, children, sibl
                 <dd className="flex flex-wrap gap-x-2 gap-y-1 items-center">
                   {parents.map((p) => (
                     <span key={p.id} className="inline-flex items-center gap-1">
-                      <Link href={`/people/${p.id}`} className="underline">{formatPersonName(p)}</Link>
+                      <Link href={`/people/${p.id}`} className="underline">{formatPersonName(p, locale)}</Link>
                       <span className="text-muted-foreground"> — {t("profile.parentOf")} {currentName}</span>
                       {canRemove(p.id) && <RemoveRelationshipButton fromPersonId={p.id} toPersonId={person.id} type="PARENT" />}
                     </span>
@@ -159,7 +161,7 @@ export function PersonProfile({ person, age, formatDate, parents, children, sibl
               <div>
                 <dt className="text-muted-foreground font-medium mb-1">{t("profile.spouse")}</dt>
                 <dd className="inline-flex items-center gap-1">
-                  <Link href={`/people/${spouse.id}`} className="underline">{formatPersonName(spouse)}</Link>
+                  <Link href={`/people/${spouse.id}`} className="underline">{formatPersonName(spouse, locale)}</Link>
                   {canRemove(spouse.id) && <RemoveRelationshipButton fromPersonId={person.id} toPersonId={spouse.id} type="SPOUSE" />}
                 </dd>
               </div>
@@ -170,7 +172,7 @@ export function PersonProfile({ person, age, formatDate, parents, children, sibl
                 <dd className="flex flex-wrap gap-x-2 gap-y-1 items-center">
                   {children.map((p) => (
                     <span key={p.id} className="inline-flex items-center gap-1">
-                      <Link href={`/people/${p.id}`} className="underline">{formatPersonName(p)}</Link>
+                      <Link href={`/people/${p.id}`} className="underline">{formatPersonName(p, locale)}</Link>
                       <span className="text-muted-foreground"> — {t("profile.childOf")} {currentName}</span>
                       {canRemove(p.id) && <RemoveRelationshipButton fromPersonId={person.id} toPersonId={p.id} type="CHILD" />}
                     </span>
@@ -184,7 +186,7 @@ export function PersonProfile({ person, age, formatDate, parents, children, sibl
                 <dd className="flex flex-wrap gap-2 items-center">
                   {siblings.map((p) => (
                     <span key={p.id} className="inline-flex items-center gap-1">
-                      <Link href={`/people/${p.id}`} className="underline">{formatPersonName(p)}</Link>
+                      <Link href={`/people/${p.id}`} className="underline">{formatPersonName(p, locale)}</Link>
                       {canRemove(p.id) && <RemoveRelationshipButton fromPersonId={p.id} toPersonId={person.id} type="SIBLING" />}
                     </span>
                   ))}
@@ -198,7 +200,7 @@ export function PersonProfile({ person, age, formatDate, parents, children, sibl
                   {other.map(({ person: p, label, fromPersonId, toPersonId }) => (
                     <span key={p.id} className="inline-flex items-center gap-1">
                       <Link href={`/people/${p.id}`} className="underline">
-                        {formatPersonName(p)}{label ? ` (${label})` : ""}
+                        {formatPersonName(p, locale)}{label ? ` (${label})` : ""}
                       </Link>
                       {canRemove(p.id) && <RemoveRelationshipButton fromPersonId={fromPersonId} toPersonId={toPersonId} type="OTHER" />}
                     </span>

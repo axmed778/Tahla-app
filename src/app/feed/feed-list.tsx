@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslations } from "@/components/i18n-provider";
+import { useLocale, useTranslations } from "@/components/i18n-provider";
 import { cn, formatPersonName } from "@/lib/utils";
 import { addComment } from "@/actions/feed";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { POST_TYPE_BADGE, type PostType } from "@/lib/feed";
 
-type RelatedPerson = { id: string; firstName: string; middleName: string | null; lastName: string };
+type RelatedPerson = { id: string; firstName: string; middleName: string | null; lastName: string; gender: string };
 
 type Post = {
   id: string;
@@ -41,6 +41,7 @@ function typeBadgeClass(type: string) {
 
 export function FeedList({ posts }: { posts: Post[] }) {
   const t = useTranslations();
+  const locale = useLocale();
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
   if (posts.length === 0) {
@@ -159,7 +160,7 @@ export function FeedList({ posts }: { posts: Post[] }) {
                         href={`/people/${person.id}`}
                         className="inline-flex items-center rounded-full border border-primary/25 bg-background px-3 py-1 text-sm font-medium text-primary shadow-sm transition hover:bg-primary/10"
                       >
-                        {formatPersonName(person)}
+                        {formatPersonName(person, locale)}
                       </Link>
                     ))}
                   </div>

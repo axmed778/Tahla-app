@@ -14,6 +14,15 @@ import { redirect } from "next/navigation";
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
+/** The clan a user belongs to, or null. Used to stamp new people with their family line. */
+async function clanIdOfUser(userId: string): Promise<string | null> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { clanId: true },
+  });
+  return user?.clanId ?? null;
+}
+
 export async function quickAddPerson(formData: FormData) {
   const session = await getSession();
   if (!session) return { error: { _form: ["Not logged in"] } };
@@ -28,6 +37,7 @@ export async function quickAddPerson(formData: FormData) {
     return { error: parsed.error.flatten().fieldErrors as Record<string, string[] | undefined> };
   }
   const { firstName, lastName, phone, city } = parsed.data;
+  const clanId = await clanIdOfUser(session.userId);
   const person = await prisma.person.create({
     data: {
       firstName,
@@ -35,6 +45,7 @@ export async function quickAddPerson(formData: FormData) {
       gender: "OTHER",
       maritalStatus: "SINGLE",
       ...(city && { city }),
+      ...(clanId && { clanId }),
     },
   });
   await prisma.personPrivacySettings.upsert({
@@ -70,6 +81,8 @@ async function createPersonRecord(
     return { error: parsed.error.flatten().fieldErrors as Record<string, string[] | undefined> };
   }
   const { phones, emails, tagIds, birthDate, deathDate, profileVisibility, privacy, ...rest } = parsed.data;
+  // Stamp the person with a clan: the linked user's clan, or the creator's clan otherwise.
+  const clanId = await clanIdOfUser(linkUserId ?? session.userId);
   const person = await prisma.person.create({
     data: {
       ...rest,
@@ -77,6 +90,7 @@ async function createPersonRecord(
       deathDate: deathDate ? new Date(deathDate) : null,
       profileVisibility: profileVisibility ?? "ALL",
       ...(linkUserId && { userId: linkUserId }),
+      ...(clanId && { clanId }),
       privacySettings: {
         create: {
           birthDateVisibility: privacy?.birthDate ?? "EVERYONE",
@@ -174,9 +188,13 @@ export async function addDeceasedRelative(
 
   const existing = await prisma.person.findUnique({
     where: { id: relativeOfPersonId },
-    select: { id: true },
+    select: { id: true, clanId: true, user: { select: { clanId: true } } },
   });
   if (!existing) return { error: "Person not found." };
+
+  // Inherit the clan from the person this relative is attached to, so that ancestors added
+  // without a user account remain discoverable in clan-scoped father detection.
+  const clanId = existing.clanId ?? existing.user?.clanId ?? null;
 
   const deceased = await prisma.person.create({
     data: {
@@ -187,6 +205,7 @@ export async function addDeceasedRelative(
       birthDate: birthDate ? new Date(birthDate) : null,
       deathDate: deathDate ? new Date(deathDate) : null,
       profileVisibility: "ALL",
+      ...(clanId && { clanId }),
       privacySettings: { create: {} },
     },
   });

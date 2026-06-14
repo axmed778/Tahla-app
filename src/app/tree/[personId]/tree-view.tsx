@@ -4,8 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { select } from "d3-selection";
 import { zoom, zoomIdentity, type ZoomBehavior } from "d3-zoom";
-import { useTranslations } from "@/components/i18n-provider";
+import { useLocale, useTranslations } from "@/components/i18n-provider";
 import { formatPersonName } from "@/lib/utils";
+import type { Locale } from "@/lib/i18n-config";
 import {
   layoutDescendantTree,
   type DescendantLayoutInput,
@@ -22,12 +23,13 @@ type FamilyNode = {
   firstName: string;
   middleName: string | null;
   lastName: string;
+  gender: string;
   isFocus: boolean;
   children: FamilyNode[];
   hasMoreDescendants: boolean;
 };
 
-type Focus = { id: string; firstName: string; middleName: string | null; lastName: string };
+type Focus = { id: string; firstName: string; middleName: string | null; lastName: string; gender: string };
 
 const PADDING = 40;
 const MIN_SCALE = 0.2;
@@ -35,13 +37,13 @@ const MAX_SCALE = 2.5;
 const EDGE_COLOR = "#111827"; // neutral black for normal connectors
 const PATH_COLOR = "#dc2626"; // red for the requested kinship path
 
-function toLayoutInput(node: FamilyNode): DescendantLayoutInput {
+function toLayoutInput(node: FamilyNode, locale: Locale): DescendantLayoutInput {
   return {
     id: node.id,
-    label: formatPersonName(node),
+    label: formatPersonName(node, locale),
     isFocus: node.isFocus,
     hasMoreDescendants: node.hasMoreDescendants,
-    children: node.children.map(toLayoutInput),
+    children: node.children.map((c) => toLayoutInput(c, locale)),
   };
 }
 
@@ -61,6 +63,7 @@ export function TreeView({
   people: KinshipPersonDTO[];
 }) {
   const t = useTranslations();
+  const locale = useLocale();
   const svgRef = useRef<SVGSVGElement | null>(null);
   const gRef = useRef<SVGGElement | null>(null);
   const zoomRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null);
@@ -71,8 +74,8 @@ export function TreeView({
   const [finding, setFinding] = useState(false);
 
   const layout = useMemo(() => {
-    return layoutDescendantTree(toLayoutInput(tree));
-  }, [tree]);
+    return layoutDescendantTree(toLayoutInput(tree, locale));
+  }, [tree, locale]);
 
   const nodeById = useMemo(() => {
     const map = new Map<string, PositionedNode>();

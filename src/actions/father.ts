@@ -33,6 +33,7 @@ export async function getFatherCandidates(personId: string): Promise<FatherCandi
       middleName: true,
       lastName: true,
       userId: true,
+      clanId: true,
       user: { select: { clanId: true } },
     },
   });
@@ -43,12 +44,12 @@ export async function getFatherCandidates(personId: string): Promise<FatherCandi
   if (!isOwner && !session.isMaster) return [];
 
   const patronymic = person.middleName?.trim();
-  const clanId = person.user?.clanId;
+  const clanId = person.clanId ?? person.user?.clanId;
   if (!patronymic || !clanId) return [];
 
-  // Clan members are the Persons linked to users in the same clan.
+  // Clan members are every Person in the clan — including those added without a user account.
   const clanPeople = await prisma.person.findMany({
-    where: { user: { clanId }, gender: "MALE" },
+    where: { clanId, gender: "MALE" },
     select: { id: true, firstName: true, lastName: true, middleName: true, gender: true },
   });
 
@@ -81,14 +82,14 @@ export async function searchClanFathersByName(query: string): Promise<FatherCand
 
   const me = await prisma.person.findUnique({
     where: { userId: session.userId },
-    select: { id: true, lastName: true, user: { select: { clanId: true } } },
+    select: { id: true, lastName: true, clanId: true, user: { select: { clanId: true } } },
   });
   if (!me) return [];
-  const clanId = me.user?.clanId;
+  const clanId = me.clanId ?? me.user?.clanId;
   if (!clanId) return [];
 
   const clanPeople = await prisma.person.findMany({
-    where: { user: { clanId }, gender: "MALE" },
+    where: { clanId, gender: "MALE" },
     select: { id: true, firstName: true, lastName: true, middleName: true },
   });
 
@@ -122,11 +123,11 @@ export async function confirmFather(
   const [child, father] = await Promise.all([
     prisma.person.findUnique({
       where: { id: childPersonId },
-      select: { id: true, userId: true, user: { select: { clanId: true } } },
+      select: { id: true, userId: true, clanId: true, user: { select: { clanId: true } } },
     }),
     prisma.person.findUnique({
       where: { id: fatherPersonId },
-      select: { id: true, userId: true, user: { select: { clanId: true } } },
+      select: { id: true, userId: true, clanId: true, user: { select: { clanId: true } } },
     }),
   ]);
   if (!child || !father) return { error: "Person not found." };
@@ -134,8 +135,8 @@ export async function confirmFather(
   const isOwner = child.userId === session.userId;
   if (!isOwner && !session.isMaster) return { error: "Not allowed to edit this profile." };
 
-  const childClan = child.user?.clanId ?? null;
-  const fatherClan = father.user?.clanId ?? null;
+  const childClan = child.clanId ?? child.user?.clanId ?? null;
+  const fatherClan = father.clanId ?? father.user?.clanId ?? null;
   if (childClan && fatherClan && childClan !== fatherClan) {
     return { error: "The selected father is in a different clan." };
   }

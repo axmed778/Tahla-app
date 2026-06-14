@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Person } from "@prisma/client";
 import { formatPersonName } from "@/lib/utils";
+import type { Locale } from "@/lib/i18n-config";
 
 type Props = {
   person: Person;
@@ -8,9 +9,10 @@ type Props = {
   spouse: Person | null;
   children: Person[];
   siblings: Person[];
+  locale: Locale;
 };
 
-export function MiniTree({ person, parents, spouse, children, siblings }: Props) {
+export function MiniTree({ person, parents, spouse, children, siblings, locale }: Props) {
   return (
     <div className="rounded-lg border bg-muted/30 p-4 space-y-4">
       {/* Parents row */}
@@ -22,7 +24,7 @@ export function MiniTree({ person, parents, spouse, children, siblings }: Props)
               href={`/people/${p.id}`}
               className="rounded-md border bg-background px-3 py-2 text-sm hover:bg-muted"
             >
-              {formatPersonName(p)}
+              {formatPersonName(p, locale)}
             </Link>
           ))}
         </div>
@@ -33,14 +35,14 @@ export function MiniTree({ person, parents, spouse, children, siblings }: Props)
           href={`/people/${person.id}`}
           className="rounded-md border-2 border-primary bg-primary/10 px-4 py-2 font-medium text-sm"
         >
-          {formatPersonName(person)}
+          {formatPersonName(person, locale)}
         </Link>
         {spouse && (
           <Link
             href={`/people/${spouse.id}`}
             className="rounded-md border bg-background px-3 py-2 text-sm hover:bg-muted"
           >
-            {formatPersonName(spouse)}
+            {formatPersonName(spouse, locale)}
           </Link>
         )}
       </div>
@@ -53,7 +55,7 @@ export function MiniTree({ person, parents, spouse, children, siblings }: Props)
               href={`/people/${p.id}`}
               className="rounded-md border bg-background px-3 py-2 text-sm hover:bg-muted"
             >
-              {formatPersonName(p)}
+              {formatPersonName(p, locale)}
             </Link>
           ))}
         </div>
@@ -69,7 +71,7 @@ export function MiniTree({ person, parents, spouse, children, siblings }: Props)
                 href={`/people/${p.id}`}
                 className="rounded-md border bg-background px-2 py-1 text-sm hover:bg-muted"
               >
-                {formatPersonName(p)}
+                {formatPersonName(p, locale)}
               </Link>
             ))}
           </div>

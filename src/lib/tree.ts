@@ -11,6 +11,7 @@ export type FamilyTreeNode = {
   firstName: string;
   middleName: string | null;
   lastName: string;
+  gender: string;
   /** True for the person the tree was opened for (highlighted in the UI). */
   isFocus: boolean;
   /** Children one generation down. */
@@ -23,7 +24,7 @@ export type FamilyTree = {
   /** Root of the tree: the apical (topmost) ancestor reachable from the focus. */
   apex: FamilyTreeNode;
   /** The person the tree was opened for. */
-  focus: { id: string; firstName: string; middleName: string | null; lastName: string };
+  focus: { id: string; firstName: string; middleName: string | null; lastName: string; gender: string };
 };
 
 /**
@@ -40,7 +41,7 @@ export async function buildFamilyTree(
 ): Promise<FamilyTree | null> {
   const focus = await prisma.person.findUnique({
     where: { id: focusId },
-    select: { id: true, firstName: true, middleName: true, lastName: true },
+    select: { id: true, firstName: true, middleName: true, lastName: true, gender: true },
   });
   if (!focus) return null;
 
@@ -51,12 +52,13 @@ export async function buildFamilyTree(
     firstName: focus.firstName,
     middleName: focus.middleName ?? null,
     lastName: focus.lastName,
+    gender: focus.gender,
   };
   for (let i = 0; i < maxUp; i++) {
     const rel = await prisma.relationship.findFirst({
       where: { toPersonId: apex.id, type: "PARENT" },
       select: {
-        fromPerson: { select: { id: true, firstName: true, middleName: true, lastName: true } },
+        fromPerson: { select: { id: true, firstName: true, middleName: true, lastName: true, gender: true } },
       },
       orderBy: { createdAt: "asc" },
     });
@@ -67,6 +69,7 @@ export async function buildFamilyTree(
       firstName: rel.fromPerson.firstName,
       middleName: rel.fromPerson.middleName ?? null,
       lastName: rel.fromPerson.lastName,
+      gender: rel.fromPerson.gender,
     };
   }
 
@@ -77,7 +80,7 @@ export async function buildFamilyTree(
     const childRels = await prisma.relationship.findMany({
       where: { fromPersonId: person.id, type: "CHILD" },
       select: {
-        toPerson: { select: { id: true, firstName: true, middleName: true, lastName: true } },
+        toPerson: { select: { id: true, firstName: true, middleName: true, lastName: true, gender: true } },
       },
       orderBy: { createdAt: "asc" },
     });
@@ -87,6 +90,7 @@ export async function buildFamilyTree(
         firstName: r.toPerson.firstName,
         middleName: r.toPerson.middleName ?? null,
         lastName: r.toPerson.lastName,
+        gender: r.toPerson.gender,
       }))
       .filter((c) => !visited.has(c.id));
 
@@ -103,6 +107,7 @@ export async function buildFamilyTree(
       firstName: person.firstName,
       middleName: person.middleName,
       lastName: person.lastName,
+      gender: person.gender,
       isFocus: person.id === focus.id,
       children,
       hasMoreDescendants,
@@ -117,8 +122,9 @@ export async function buildFamilyTree(
       firstName: focus.firstName,
       middleName: focus.middleName ?? null,
       lastName: focus.lastName,
+      gender: focus.gender,
     },
   };
 }
 
-type Plain = { id: string; firstName: string; middleName: string | null; lastName: string };
+type Plain = { id: string; firstName: string; middleName: string | null; lastName: string; gender: string };

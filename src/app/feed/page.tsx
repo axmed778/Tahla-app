@@ -19,7 +19,7 @@ export default async function FeedPage({ searchParams }: { searchParams: SearchP
     getFeed(50, groupId),
     prisma.person.findMany({
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
-      select: { id: true, firstName: true, middleName: true, lastName: true },
+      select: { id: true, firstName: true, middleName: true, lastName: true, gender: true },
     }),
     prisma.groupMember.findMany({
       where: { userId: user.id },

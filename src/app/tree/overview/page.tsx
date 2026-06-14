@@ -11,13 +11,14 @@ export default async function TreeOverviewPage() {
   if (!user) redirect("/lock");
   if (!user.isMaster) redirect("/tree");
 
-  const [people, t] = await Promise.all([
+  const [people, locale] = await Promise.all([
     prisma.person.findMany({
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
-      select: { id: true, firstName: true, lastName: true, middleName: true },
+      select: { id: true, firstName: true, lastName: true, middleName: true, gender: true },
     }),
-    getLocale().then((l) => getT(l)),
+    getLocale(),
   ]);
+  const t = getT(locale);
 
   return (
     <div className="min-h-screen bg-background">
@@ -38,7 +39,7 @@ export default async function TreeOverviewPage() {
                 href={`/tree/${p.id}`}
                 className="block rounded-lg border bg-card px-4 py-3 text-card-foreground hover:bg-muted/50 hover:border-primary/50 transition-colors"
               >
-                <span className="font-medium">{formatPersonName(p)}</span>
+                <span className="font-medium">{formatPersonName(p, locale)}</span>
                 <span className="ml-2 text-sm text-muted-foreground">→ {t("tree.viewTree")}</span>
               </Link>
             </li>

@@ -13,7 +13,8 @@ import { AddRelativeRequestButton } from "@/components/add-relative-request-butt
 
 export default async function PersonPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const [user, t] = await Promise.all([getCurrentUser(), getLocale().then((l) => getT(l))]);
+  const [user, locale] = await Promise.all([getCurrentUser(), getLocale()]);
+  const t = getT(locale);
   const person = await prisma.person.findUnique({
     where: { id },
     include: {
@@ -139,6 +140,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
           spouse={spouse ?? null}
           other={other}
           t={t}
+          locale={locale}
           canEdit={canEdit}
           currentUserPersonId={user?.personId ?? null}
           showContact={showContact}
@@ -162,6 +164,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             spouse={spouse ?? null}
             children={children}
             siblings={siblings}
+            locale={locale}
           />
         </section>
       </main>
