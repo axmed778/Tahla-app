@@ -9,7 +9,7 @@ export async function DefaultTreeSection() {
     prisma.settings.findUnique({ where: { id: 1 } }),
     prisma.person.findMany({
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
-      select: { id: true, firstName: true, middleName: true, lastName: true },
+      select: { id: true, firstName: true, middleName: true, lastName: true, gender: true },
     }),
     getLocale(),
     getLocale().then((l) => getT(l)),
@@ -28,7 +28,7 @@ export async function DefaultTreeSection() {
           <option value="">— {t("feed.none")} —</option>
           {people.map((p) => (
             <option key={p.id} value={p.id}>
-              {formatPersonName(p)}
+              {formatPersonName(p, locale)}
             </option>
           ))}
         </select>

@@ -32,7 +32,7 @@ export async function getFeed(limit = 50, groupId?: string | null) {
     include: {
       author: { select: { id: true, firstName: true, lastName: true } },
       relatedPeople: {
-        include: { person: { select: { id: true, firstName: true, middleName: true, lastName: true } } },
+        include: { person: { select: { id: true, firstName: true, middleName: true, lastName: true, gender: true } } },
       },
       images: true,
       comments: {

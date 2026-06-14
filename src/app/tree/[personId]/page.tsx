@@ -12,12 +12,13 @@ import { TreeView } from "./tree-view";
 
 export default async function TreePage({ params }: { params: Promise<{ personId: string }> }) {
   const { personId } = await params;
-  const [user, t] = await Promise.all([getCurrentUser(), getLocale().then((l) => getT(l))]);
+  const [user, locale] = await Promise.all([getCurrentUser(), getLocale()]);
+  const t = getT(locale);
   if (!user) return null;
 
   const person = await prisma.person.findUnique({
     where: { id: personId },
-    select: { id: true, firstName: true, middleName: true, lastName: true, userId: true },
+    select: { id: true, firstName: true, middleName: true, lastName: true, gender: true, userId: true },
   });
   if (!person) notFound();
 
@@ -47,7 +48,7 @@ export default async function TreePage({ params }: { params: Promise<{ personId:
           ← {t("common.backToDirectory")}
         </Link>
         <h1 className="text-2xl font-bold mb-2">
-          {t("tree.title")}: {formatPersonName(person)}
+          {t("tree.title")}: {formatPersonName(person, locale)}
         </h1>
         {nameOnly && (
           <p className="text-sm text-muted-foreground mb-6">

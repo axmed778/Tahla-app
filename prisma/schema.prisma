@@ -45,7 +45,8 @@ model Clan {
   nameNormalized String @unique
   createdAt DateTime @default(now())
 
-  users User[]
+  users  User[]
+  people Person[]
 
   @@index([nameNormalized])
 }
@@ -145,10 +146,15 @@ model Person {
   photoUrl     String?
   profileVisibility String @default("ALL") // ALL | FRIENDS | FIRST_GEN
   userId       String?   @unique
+  /// Clan (family line) this person belongs to. Set from the creating user's clan so that
+  /// people without a user account (e.g. deceased ancestors) are still discoverable in
+  /// clan-scoped searches such as automatic father detection.
+  clanId       String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
   user         User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  clan         Clan?     @relation(fields: [clanId], references: [id], onDelete: SetNull)
   phones       PersonPhone[]
   emails       PersonEmail[]
   privacySettings PersonPrivacySettings?
@@ -160,6 +166,7 @@ model Person {
   @@index([lastName, firstName])
   @@index([city])
   @@index([userId])
+  @@index([clanId])
 }
 
 model PersonPrivacySettings {

@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { addRelationship } from "@/actions/relationships";
 import { formatPersonName } from "@/lib/utils";
-import { useTranslations } from "@/components/i18n-provider";
+import { useLocale, useTranslations } from "@/components/i18n-provider";
 import type { Person } from "@prisma/client";
 
 type Props = { fromPersonId: string; otherPeople: Person[] };
@@ -32,6 +32,7 @@ const REL_TYPES = ["CHILD", "SIBLING", "SPOUSE", "OTHER"] as const;
 
 export function AddRelationshipForm({ fromPersonId, otherPeople }: Props) {
   const t = useTranslations();
+  const locale = useLocale();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +78,7 @@ export function AddRelationshipForm({ fromPersonId, otherPeople }: Props) {
               <SelectContent>
                 {otherPeople.map((p) => (
                   <SelectItem key={p.id} value={p.id}>
-                    {formatPersonName(p)}
+                    {formatPersonName(p, locale)}
                   </SelectItem>
                 ))}
               </SelectContent>

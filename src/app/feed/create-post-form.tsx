@@ -13,14 +13,14 @@ import {
 } from "@/components/ui/select";
 import { createPost } from "@/actions/feed";
 import { POST_TYPES, POST_TYPE_PILL_SELECTED, type PostType } from "@/lib/feed";
-import { useTranslations } from "@/components/i18n-provider";
+import { useLocale, useTranslations } from "@/components/i18n-provider";
 import { cn, formatPersonName } from "@/lib/utils";
 import { ImagePlus, Upload, User, X } from "lucide-react";
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_SIZE = 5 * 1024 * 1024;
 
-type Person = { id: string; firstName: string; middleName: string | null; lastName: string };
+type Person = { id: string; firstName: string; middleName: string | null; lastName: string; gender: string };
 type Group = { id: string; name: string };
 
 function initials(first: string, last: string) {
@@ -41,6 +41,7 @@ export function CreatePostForm({
   currentUser: { firstName: string; lastName: string };
 }) {
   const t = useTranslations();
+  const locale = useLocale();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [type, setType] = useState<PostType | "">("");
@@ -254,7 +255,7 @@ export function CreatePostForm({
                       ) : (
                         availableToAdd.map((p) => (
                           <SelectItem key={p.id} value={p.id}>
-                            {formatPersonName(p)}
+                            {formatPersonName(p, locale)}
                           </SelectItem>
                         ))
                       )}
@@ -270,7 +271,7 @@ export function CreatePostForm({
                           key={p.id}
                           className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-sm font-medium text-primary"
                         >
-                          {formatPersonName(p)}
+                          {formatPersonName(p, locale)}
                           <button
                             type="button"
                             onClick={() => removePerson(p.id)}

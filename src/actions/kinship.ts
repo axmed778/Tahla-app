@@ -9,6 +9,8 @@ import {
   type FamilyEdge,
 } from "@/lib/kinship";
 import { formatPersonName } from "@/lib/utils";
+import { getLocale } from "@/lib/i18n";
+import type { Locale } from "@/lib/i18n-config";
 
 export type KinshipPersonDTO = { id: string; name: string };
 
@@ -20,10 +22,10 @@ export type KinshipPathDTO = {
   chain: KinshipPersonDTO[];
 };
 
-type PlainPerson = { id: string; firstName: string; middleName: string | null; lastName: string };
+type PlainPerson = { id: string; firstName: string; middleName: string | null; lastName: string; gender: string };
 
-function nameOf(p: PlainPerson): string {
-  return formatPersonName(p);
+function nameOf(p: PlainPerson, locale: Locale): string {
+  return formatPersonName(p, locale);
 }
 
 /**
@@ -46,10 +48,11 @@ export async function peopleForKinshipPicker(personId: string): Promise<KinshipP
       id: { not: personId },
       ...(clanId ? { user: { clanId } } : {}),
     },
-    select: { id: true, firstName: true, middleName: true, lastName: true },
+    select: { id: true, firstName: true, middleName: true, lastName: true, gender: true },
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
   });
-  return people.map((p) => ({ id: p.id, name: nameOf(p) }));
+  const locale = await getLocale();
+  return people.map((p) => ({ id: p.id, name: nameOf(p, locale) }));
 }
 
 /**
@@ -97,9 +100,10 @@ export async function findKinshipPath(
 
   const people = await prisma.person.findMany({
     where: { id: { in: path.nodes } },
-    select: { id: true, firstName: true, middleName: true, lastName: true },
+    select: { id: true, firstName: true, middleName: true, lastName: true, gender: true },
   });
-  const nameById = new Map(people.map((p) => [p.id, nameOf(p)]));
+  const locale = await getLocale();
+  const nameById = new Map(people.map((p) => [p.id, nameOf(p, locale)]));
 
   const chain: KinshipPersonDTO[] = path.nodes.map((id) => ({
     id,
